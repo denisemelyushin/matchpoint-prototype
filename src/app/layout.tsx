@@ -33,7 +33,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} h-full`}>
-      <body className="h-full overflow-hidden">{children}</body>
+      <body className="h-full overflow-hidden flex justify-center bg-background">
+        <div className="relative w-full h-full max-w-[480px] overflow-hidden">
+          {children}
+        </div>
+      </body>
     </html>
   );
 }
