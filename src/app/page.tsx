@@ -1,7 +1,7 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Logo } from "@/components/Logo";
 
 export default function WelcomePage() {
   const router = useRouter();
@@ -10,11 +10,15 @@ export default function WelcomePage() {
     <div className="flex flex-col items-center justify-between h-full bg-background px-8 py-16">
       <div className="flex-1" />
 
-      <div className="flex flex-col items-center gap-6">
-        <Logo size={100} />
-        <h1 className="text-3xl font-bold text-foreground tracking-tight">
-          Matchpoint Pro
-        </h1>
+      <div className="flex flex-col items-center gap-5">
+        <Image
+          src="/logo.png"
+          alt="Matchpoint"
+          width={320}
+          height={213}
+          priority
+          className="w-[280px] h-auto max-w-full"
+        />
         <p className="text-muted text-center text-base max-w-[260px]">
           Find courts. Play games. Connect with players.
         </p>
