@@ -13,7 +13,6 @@ import {
 } from "@/components/form";
 import { EditIcon } from "@/components/icons";
 import { SKILL_LEVELS, type SkillLevel } from "@/lib/types";
-import { animatePop } from "@/lib/animate-nav";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -50,11 +49,11 @@ export default function EditProfilePage() {
       bio: bio.trim(),
       skillLevel,
     });
-    animatePop(() => router.back());
+    router.back();
   };
 
   return (
-    <div className="flex flex-col h-full bg-background animate-push">
+    <div className="flex flex-col h-full bg-background">
       <AppHeader
         title="Edit Profile"
         right={

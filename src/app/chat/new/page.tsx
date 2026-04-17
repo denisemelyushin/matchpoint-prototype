@@ -32,7 +32,7 @@ export default function NewChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background animate-push">
+    <div className="flex flex-col h-full bg-background">
       <AppHeader title="New Message" />
 
       <div className="px-4 pt-4 pb-2">

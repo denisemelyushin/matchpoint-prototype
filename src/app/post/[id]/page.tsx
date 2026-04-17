@@ -28,7 +28,7 @@ export default function PostDetailPage({
 
   if (!post || !author) {
     return (
-      <div className="flex flex-col h-full bg-background animate-push">
+      <div className="flex flex-col h-full bg-background">
         <AppHeader title="Post" />
         <div className="flex-1 flex items-center justify-center text-muted">
           Post not found
@@ -45,7 +45,7 @@ export default function PostDetailPage({
   };
 
   return (
-    <div className="flex flex-col h-full bg-background animate-push">
+    <div className="flex flex-col h-full bg-background">
       <AppHeader title="Post" />
 
       <div className="flex-1 overflow-y-auto">

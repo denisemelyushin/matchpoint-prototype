@@ -17,7 +17,6 @@ import {
   type SkillLevel,
 } from "@/lib/types";
 import { toDatetimeLocalValue } from "@/lib/format";
-import { animatePop } from "@/lib/animate-nav";
 
 const CUSTOM_COURT_VALUE = "__custom__";
 
@@ -66,11 +65,11 @@ export default function CreateGamePage() {
       notes: notes.trim() || undefined,
       isPrivate,
     });
-    animatePop(() => router.back());
+    router.back();
   };
 
   return (
-    <div className="flex flex-col h-full bg-background animate-push">
+    <div className="flex flex-col h-full bg-background">
       <AppHeader
         title="New Game"
         right={

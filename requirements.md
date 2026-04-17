@@ -27,9 +27,6 @@ A mobile-first web app prototype for connecting pickleball players. This documen
 - **Welcome** and **Onboarding** screens must **not scroll vertically** and must **not trigger pull-to-refresh** or rubber-band overscroll.
 - Main app screens (Feed, Games, Players, Chats, and all sub-screens) may scroll vertically but must suppress pull-to-refresh.
 - All state (profile, posts, comments, likes, games, chats, messages) is kept in a single React context and persists for the lifetime of the browser tab.
-- **Forward navigation into any sub-screen** (e.g. opening a post, opening a chat, opening the profile, entering a create flow, viewing Privacy or Terms) plays a **slide-in-from-right** transition so navigation feels native and smooth.
-- **Back navigation out of a sub-screen** (back button, Save, Post, Create, or any action that dismisses the screen) plays the mirror **slide-out-to-right** transition before the screen unmounts.
-- All navigation animations are disabled when the OS signals *reduced motion*.
 
 ---
 

@@ -12,7 +12,6 @@ import {
   TextInput,
 } from "@/components/form";
 import { ImageIcon, XIcon } from "@/components/icons";
-import { animatePop } from "@/lib/animate-nav";
 
 export default function CreatePostPage() {
   const router = useRouter();
@@ -42,11 +41,11 @@ export default function CreatePostPage() {
       location: location.trim() || undefined,
       isPrivate,
     });
-    animatePop(() => router.back());
+    router.back();
   };
 
   return (
-    <div className="flex flex-col h-full bg-background animate-push">
+    <div className="flex flex-col h-full bg-background">
       <AppHeader
         title="New Post"
         right={

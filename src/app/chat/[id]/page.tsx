@@ -27,7 +27,7 @@ export default function ChatDetailPage({
 
   if (!chat || !otherUser) {
     return (
-      <div className="flex flex-col h-full bg-background animate-push">
+      <div className="flex flex-col h-full bg-background">
         <AppHeader title="Chat" />
         <div className="flex-1 flex items-center justify-center text-muted">
           Chat not found
@@ -44,7 +44,7 @@ export default function ChatDetailPage({
   };
 
   return (
-    <div className="flex flex-col h-full bg-background animate-push">
+    <div className="flex flex-col h-full bg-background">
       <AppHeader
         title={otherUser.name}
         right={
