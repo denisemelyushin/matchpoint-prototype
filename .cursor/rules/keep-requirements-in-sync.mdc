@@ -1,0 +1,42 @@
+---
+description: Keep requirements.md in sync with product/behavior changes
+alwaysApply: true
+---
+
+# Keep `requirements.md` In Sync
+
+`requirements.md` at the repo root is the single source of truth for what this prototype does. It must stay accurate.
+
+## When to update `requirements.md`
+
+Update it in the **same change** whenever any of these happen:
+
+- A new screen, route, or tab is added, removed, or renamed.
+- A user-visible feature, flow, or interaction changes (e.g. new swipe gestures, FAB behavior, navigation rules).
+- Copy shown to the user changes (welcome text, onboarding titles/descriptions, menu labels).
+- Data model changes that users can see (new profile fields, new post/game/chat fields).
+- Design system changes (primary color, max-width, theme, key visual rules).
+- Global behavior rules change (scroll, overscroll, pull-to-refresh, touch handling).
+- A requirement is explicitly added, clarified, or dropped by the user.
+
+## When NOT to touch it
+
+- Pure refactors with no user-visible effect.
+- Internal renames, file moves, or code-only cleanup.
+- Bug fixes that restore already-documented behavior.
+
+## How to update
+
+1. Read `requirements.md` first — find the section(s) the change touches.
+2. Edit those sections in place; do **not** append "changelog" entries.
+3. Keep the structure and numbering. Add new subsections only if a whole new area is introduced.
+4. Use the same style: short bullets, concrete, user-facing, no implementation details (no file paths, component names, or library names unless already used in the doc's "Platform & Tech" section).
+5. If user copy changed (titles, descriptions, labels), the doc's quoted text must match exactly.
+6. Include the `requirements.md` edit in the **same commit** as the code change, with a message that mentions both (e.g. `Add X feature and update requirements`).
+
+## Quick checklist before finishing a change
+
+- [ ] Did user-visible behavior or copy change? If yes → `requirements.md` edited.
+- [ ] Is the new/changed behavior in the correct section (Welcome, Onboarding, Feed, Games, Players, Chats, Profile, Menu, Global Behavior, etc.)?
+- [ ] Are any now-inaccurate sentences removed or updated?
+- [ ] Committed together with the code change?

@@ -53,7 +53,7 @@ export default function EditProfilePage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background animate-push">
       <AppHeader
         title="Edit Profile"
         right={

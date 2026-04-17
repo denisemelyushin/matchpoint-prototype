@@ -4,7 +4,7 @@ import { AppHeader } from "@/components/AppHeader";
 
 export default function TermsPage() {
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background animate-push">
       <AppHeader title="Terms of Use" />
       <div className="flex-1 overflow-y-auto px-5 py-6 text-foreground text-[15px] leading-relaxed space-y-4">
         <p>

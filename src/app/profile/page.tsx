@@ -14,7 +14,7 @@ export default function ProfilePage() {
   const myPosts = posts.filter((p) => p.userId === currentUser.id);
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background animate-push">
       <AppHeader title="Profile" />
 
       <div className="flex-1 overflow-y-auto">
