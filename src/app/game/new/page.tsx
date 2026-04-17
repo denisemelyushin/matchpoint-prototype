@@ -17,6 +17,7 @@ import {
   type SkillLevel,
 } from "@/lib/types";
 import { toDatetimeLocalValue } from "@/lib/format";
+import { animatePop } from "@/lib/animate-nav";
 
 const CUSTOM_COURT_VALUE = "__custom__";
 
@@ -65,7 +66,7 @@ export default function CreateGamePage() {
       notes: notes.trim() || undefined,
       isPrivate,
     });
-    router.back();
+    animatePop(() => router.back());
   };
 
   return (

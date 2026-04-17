@@ -13,6 +13,7 @@ import {
 } from "@/components/form";
 import { EditIcon } from "@/components/icons";
 import { SKILL_LEVELS, type SkillLevel } from "@/lib/types";
+import { animatePop } from "@/lib/animate-nav";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -49,7 +50,7 @@ export default function EditProfilePage() {
       bio: bio.trim(),
       skillLevel,
     });
-    router.back();
+    animatePop(() => router.back());
   };
 
   return (

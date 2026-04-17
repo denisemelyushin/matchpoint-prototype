@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ChevronLeftIcon } from "./icons";
 import type { ReactNode } from "react";
+import { animatePop } from "@/lib/animate-nav";
 
 interface AppHeaderProps {
   title: string;
@@ -14,11 +15,8 @@ export function AppHeader({ title, right, onBack }: AppHeaderProps) {
   const router = useRouter();
 
   const handleBack = () => {
-    if (onBack) {
-      onBack();
-    } else {
-      router.back();
-    }
+    const navigate = onBack ?? (() => router.back());
+    animatePop(navigate);
   };
 
   return (

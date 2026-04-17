@@ -12,6 +12,7 @@ import {
   TextInput,
 } from "@/components/form";
 import { ImageIcon, XIcon } from "@/components/icons";
+import { animatePop } from "@/lib/animate-nav";
 
 export default function CreatePostPage() {
   const router = useRouter();
@@ -41,7 +42,7 @@ export default function CreatePostPage() {
       location: location.trim() || undefined,
       isPrivate,
     });
-    router.back();
+    animatePop(() => router.back());
   };
 
   return (
