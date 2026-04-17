@@ -1,6 +1,6 @@
 "use client";
 
-import { getAvatarColor } from "@/lib/mock-data";
+import { getAvatarColor } from "@/lib/avatar";
 
 interface AvatarProps {
   name: string;

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
+import { AppStoreProvider } from "@/lib/app-store";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +36,7 @@ export default function RootLayout({
     <html lang="en" className={`${geistSans.variable} h-full`}>
       <body className="h-full overflow-hidden flex justify-center bg-background">
         <div className="relative w-full h-full max-w-[480px] overflow-hidden">
-          {children}
+          <AppStoreProvider>{children}</AppStoreProvider>
         </div>
       </body>
     </html>
