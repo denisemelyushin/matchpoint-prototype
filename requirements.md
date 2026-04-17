@@ -69,15 +69,14 @@ A mobile-first web app prototype for connecting pickleball players. This documen
 The main app has a persistent layout:
 
 - **Top-left corner**: **Menu** button, opens the slide-out menu.
-- **Top-right corner**: **Add** button (plus icon) that creates new content for the active tab — a new post on Feed, a new game on Games, a new chat on Chats. The button is hidden on the Players and Test tabs; a spacer is rendered so the title stays centered.
-- **Bottom tab bar** with five tabs:
+- **Top-right corner**: **Add** button (plus icon) that creates new content for the active tab — a new post on Feed, a new game on Games, a new chat on Chats. The button is hidden on the Players tab; a spacer is rendered so the title stays centered.
+- **Bottom tab bar** with four tabs:
   1. **Feed**
   2. **Games**
   3. **Players**
   4. **Chats**
-  5. **Test** — prototype-only playground for trying different tab-bar visual styles.
 - Active tab is highlighted in the primary green color; inactive tabs are muted grey.
-- The **Test** tab exposes a variant switcher; selecting an option instantly re-skins the bottom tab bar. The choice is persisted in `localStorage` under `matchpoint:tab-bar-variant` so it survives reloads. Available variants:
+- The visual style of the bottom tab bar can be switched from the **Settings** screen (see §16). The choice is persisted in `localStorage` under `matchpoint:tab-bar-variant` so it survives reloads. Available variants:
   - **A — Floating dock**: rounded capsule detached from the bottom edge with a soft shadow.
   - **B — Sliding pill**: flush bar with a highlight pill that animates horizontally between tabs.
   - **C — Expanding pill (Material 3)**: inactive tabs show icon only; the active tab expands to reveal its label.
@@ -101,10 +100,11 @@ Menu contents, from top to bottom:
    - Email
    - Tapping the profile card opens the Profile screen.
    - An **Edit Profile** button (primary-accented) inside the card links to the edit profile screen.
-2. **Privacy Policy** link (opens a page).
-3. **Terms of Use** link (opens a page).
-4. **Log Out** button — returns the user to the Welcome screen.
-5. **Delete Account** button — destructive styling with a tinted red background; confirms before returning to Welcome.
+2. **Settings** link — opens the Settings screen (see §16).
+3. **Privacy Policy** link (opens a page).
+4. **Terms of Use** link (opens a page).
+5. **Log Out** button — returns the user to the Welcome screen.
+6. **Delete Account** button — destructive styling with a tinted red background; confirms before returning to Welcome.
 
 ---
 
@@ -255,3 +255,19 @@ Opened from the top-right **Add** button on the Chats tab. Shows:
 - No console errors or linter warnings on build.
 - Images rendered fluidly without layout shift.
 - Responsive to orientation and small-viewport heights.
+
+---
+
+## 16. Settings (`/settings`)
+
+Reached from the **Settings** entry in the slide menu. Regular sub-page layout (back-arrow header, no bottom tab bar), so the user returns to whichever tab they were on previously.
+
+Sections:
+
+- **Tab bar style** — radio-style list of the four visual variants available for the bottom tab bar (Floating dock, Sliding pill, Expanding pill, Indicator line). Selecting an option:
+  - Instantly re-skins the bottom tab bar across the app.
+  - Persists the choice in `localStorage` under `matchpoint:tab-bar-variant` so it survives reloads.
+  - Marks the selected row with a filled primary-coloured check indicator; others show a neutral outlined circle.
+- **Preview** — a demo tab bar rendered inline below the variant list, framed inside a rounded card with a subtle border. It uses the same four tabs (Feed, Games, Players, Chats) and adopts whichever variant is currently selected, so changes in the list re-skin the preview immediately. Tapping a tab in the preview only updates its local active state — it does **not** navigate anywhere, so users can explore the active/inactive transitions of each style without leaving the Settings screen.
+
+The screen is a container for future account/app preferences; only the tab bar style section and its preview ship today.

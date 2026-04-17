@@ -5,7 +5,6 @@ import {
   TrophyIcon,
   UsersIcon,
   MessageCircleIcon,
-  SlidersIcon,
 } from "./icons";
 import { useTabBarVariant } from "@/lib/tab-bar-variant";
 
@@ -14,7 +13,6 @@ const TABS = [
   { id: "games", label: "Games", icon: TrophyIcon },
   { id: "players", label: "Players", icon: UsersIcon },
   { id: "chats", label: "Chats", icon: MessageCircleIcon },
-  { id: "test", label: "Test", icon: SlidersIcon },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];

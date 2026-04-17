@@ -9,6 +9,7 @@ import {
   FileTextIcon,
   LogOutIcon,
   TrashIcon,
+  SlidersIcon,
 } from "./icons";
 
 interface SlideMenuProps {
@@ -85,6 +86,17 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
       </div>
 
       <div className="flex-1 px-3 pt-3">
+        <button
+          onClick={() => go("/settings")}
+          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-white/5 transition-colors"
+          tabIndex={isOpen ? 0 : -1}
+        >
+          <SlidersIcon size={18} color="#888" />
+          <span className="flex-1 text-foreground text-[14px] text-left">
+            Settings
+          </span>
+        </button>
+
         <button
           onClick={() => go("/privacy")}
           className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-white/5 transition-colors"
