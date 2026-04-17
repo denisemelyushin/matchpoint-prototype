@@ -164,8 +164,8 @@ export default function CreateGamePage() {
           <PrivacyToggle isPrivate={isPrivate} onChange={setIsPrivate} />
           <p className="text-muted text-xs mt-2">
             {isPrivate
-              ? "Only invited players can join a private game."
-              : "Public games are visible to everyone."}
+              ? "Only your friends can see and join private games."
+              : "Everyone on MatchPoint app can see and join public games."}
           </p>
         </div>
       </div>

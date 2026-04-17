@@ -242,7 +242,7 @@ Opened from the top-right **Add** button on the Chats tab. Shows:
 ## 13. Privacy & Visibility
 
 - **Posts** can be marked Public or Private. Public posts are visible to everyone on the MatchPoint app; private posts are scoped to the author's friends.
-- **Games** can be marked Public or Private. Private games are visible only to their host.
+- **Games** can be marked Public or Private. Public games are visible and joinable by everyone on the MatchPoint app; private games are scoped to the host's friends, who can see and join them.
 - Private posts display a small muted lock icon in the top-right of the post header, on both the feed card and the post detail screen. Private games display a small lock icon in their game card.
 
 ---
