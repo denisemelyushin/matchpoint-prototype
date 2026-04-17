@@ -133,8 +133,8 @@ export default function CreatePostPage() {
           <PrivacyToggle isPrivate={isPrivate} onChange={setIsPrivate} />
           <p className="text-muted text-xs mt-2">
             {isPrivate
-              ? "Only you can see private posts."
-              : "Everyone on Matchpoint can see public posts."}
+              ? "Only your friends can see private posts."
+              : "Everyone on MatchPoint app can see public posts."}
           </p>
         </div>
       </div>
