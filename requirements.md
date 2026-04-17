@@ -297,9 +297,9 @@ Sections, in order:
   - Instantly re-skins the entire app by swapping a set of CSS custom properties (`--app-bg`, `--app-fg`, `--app-primary`, `--app-surface`, `--app-border`, `--app-muted`, …) via `[data-theme="…"]` on `<html>`.
   - Persists the choice in `localStorage` under `matchpoint:theme` and is applied before hydration by a small inline script in the document head, so light-theme users don't get a dark-theme flash on reload.
   - Updates the mobile browser chrome colour (`<meta name="theme-color">`) to match.
-- **App bar style** — a picker of four visual variants for the top app bar used across the Feed, Games, Players and Chats screens. Each row is a card with an inline live preview of that variant rendered above its label and description:
-  - **A · Classic** (default) — stroke burger, centred bold page title, stroke plus (24 px icons).
-  - **B · Big icons** — same layout as Classic but with larger (30 px) burger and plus icons; the centre shows a fixed "MatchPoint Pro" brand title.
+- **App bar style** — a picker of four visual variants for the top app bar used across the Feed, Games, Players and Chats screens. Options are relabeled A–D top-to-bottom in the displayed order so the user-visible letter matches the position. The first option is selected by default. Each row is a card with an inline live preview of that variant rendered above its label and description:
+  - **A · Big icons** (default) — larger (30 px) burger and plus icons with a fixed "MatchPoint Pro" brand title in the centre.
+  - **B · Classic** — stroke burger, centred bold page title, stroke plus (24 px icons).
   - **C · Framed** — burger and plus icons wrapped in rounded-square surface tiles; centred title between them.
   - **D · Branded** — stroke burger, centred "Matchpoint" wordmark (replaces the title), stroke plus.
 
@@ -307,11 +307,11 @@ Sections, in order:
   - Instantly re-skins the top bar everywhere it appears.
   - Persists the choice in `localStorage` under `matchpoint:app-bar-variant` so it survives reloads.
   - Marks the selected row with a filled primary-coloured check indicator; others show a neutral outlined circle.
-- **Menu profile style** — a picker of four visual variants for the profile card at the top of the slide-out menu. Each row renders a live, decorative preview of the card filled with the current user's name, email and initials. In every variant the whole tile is a single tap target that opens the Edit Profile screen directly; any pencil icon shown is purely decorative:
-  - **A · Classic** (default) — filled `surface-light` card with a roomy profile row.
-  - **B · Airy** — outlined card with a thin border and no filled background; same roomy profile row as Classic.
-  - **C · Compact** — filled `surface-light` card with a compact profile row and a small decorative pencil icon on the right as an edit hint.
-  - **D · Airy + hint** — outlined card like Airy with a small decorative pencil icon on the right as an edit hint.
+- **Menu profile style** — a picker of four visual variants for the profile card at the top of the slide-out menu. Options are relabeled A–D top-to-bottom in the displayed order so the user-visible letter matches the position. The first option is selected by default. Each row renders a live, decorative preview of the card filled with the current user's name, email and initials. In every variant the whole tile is a single tap target that opens the Edit Profile screen directly; any pencil icon shown is purely decorative:
+  - **A · Airy + hint** (default) — outlined card with a thin border, a roomy profile row, and a small decorative pencil icon on the right as an edit hint.
+  - **B · Compact** — filled `surface-light` card with a compact profile row and a small decorative pencil icon on the right as an edit hint.
+  - **C · Airy** — outlined card with a thin border and no filled background; roomy profile row.
+  - **D · Classic** — filled `surface-light` card with a roomy profile row.
 
   Selecting a variant instantly re-skins the profile card in the slide-out menu and persists the choice in `localStorage` under `matchpoint:menu-profile-variant`.
 - **Tab bar style** — radio-style list of the four visual variants available for the bottom tab bar (Floating dock, Sliding pill, Expanding pill, Indicator line). Selecting an option:

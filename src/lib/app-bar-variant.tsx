@@ -11,21 +11,25 @@ import {
 
 export type AppBarVariant = "A" | "B" | "C" | "D";
 
+// Options are displayed in a specific order ("Big icons" first as the new
+// default) and relabeled A–D top-to-bottom so the user-visible letter matches
+// the position. Ids stay stable (id A = Classic, id B = Big icons, etc.) so
+// existing stored preferences keep resolving to the same visual.
 export const APP_BAR_VARIANTS: Array<{
   id: AppBarVariant;
   label: string;
   description: string;
 }> = [
   {
-    id: "A",
-    label: "A · Classic",
-    description: "Centred page title between stroke icons.",
-  },
-  {
     id: "B",
-    label: "B · Big icons",
+    label: "A · Big icons",
     description:
       "Larger icons and a fixed \u201CMatchPoint Pro\u201D title in the centre.",
+  },
+  {
+    id: "A",
+    label: "B · Classic",
+    description: "Centred page title between stroke icons.",
   },
   {
     id: "C",
@@ -40,7 +44,7 @@ export const APP_BAR_VARIANTS: Array<{
 ];
 
 const STORAGE_KEY = "matchpoint:app-bar-variant";
-const DEFAULT_VARIANT: AppBarVariant = "A";
+const DEFAULT_VARIANT: AppBarVariant = "B";
 
 interface AppBarVariantContextValue {
   variant: AppBarVariant;

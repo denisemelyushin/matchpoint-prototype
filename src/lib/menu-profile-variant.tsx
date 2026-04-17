@@ -11,37 +11,42 @@ import {
 
 export type MenuProfileVariant = "A" | "B" | "C" | "D";
 
+// Options are displayed in a specific order (with the most polished "Airy +
+// hint" design sitting at the top of the settings picker) and relabeled A–D
+// top-to-bottom so the user-visible letter matches the position. The
+// underlying ids remain stable so previously stored user preferences continue
+// to resolve correctly.
 export const MENU_PROFILE_VARIANTS: Array<{
   id: MenuProfileVariant;
   label: string;
   description: string;
 }> = [
   {
-    id: "A",
-    label: "A · Classic",
-    description: "Filled card with a roomy profile row.",
-  },
-  {
-    id: "B",
-    label: "B · Airy",
-    description: "Outlined card, roomy and airy.",
+    id: "D",
+    label: "A · Airy + hint",
+    description:
+      "Outlined roomy card with a small pencil icon on the right as an edit hint.",
   },
   {
     id: "C",
-    label: "C · Compact",
+    label: "B · Compact",
     description:
       "Filled compact card with a small pencil icon on the right as an edit hint.",
   },
   {
-    id: "D",
-    label: "D · Airy + hint",
-    description:
-      "Outlined roomy card with a small pencil icon on the right as an edit hint.",
+    id: "B",
+    label: "C · Airy",
+    description: "Outlined card, roomy and airy.",
+  },
+  {
+    id: "A",
+    label: "D · Classic",
+    description: "Filled card with a roomy profile row.",
   },
 ];
 
 const STORAGE_KEY = "matchpoint:menu-profile-variant";
-const DEFAULT_VARIANT: MenuProfileVariant = "A";
+const DEFAULT_VARIANT: MenuProfileVariant = "D";
 
 interface MenuProfileVariantContextValue {
   variant: MenuProfileVariant;
