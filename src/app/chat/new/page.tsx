@@ -61,14 +61,9 @@ export default function NewChatPage() {
             >
               <Avatar name={u.name} initials={u.initials} size={44} />
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold text-foreground text-[15px] truncate">
-                    {u.name}
-                  </p>
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-muted bg-foreground/5 px-1.5 py-0.5 rounded">
-                    {u.skillLevel}
-                  </span>
-                </div>
+                <p className="font-semibold text-foreground text-[15px] truncate">
+                  {u.name}
+                </p>
                 <p className="text-muted text-xs truncate">{u.email}</p>
               </div>
             </button>

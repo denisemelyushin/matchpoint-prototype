@@ -44,7 +44,8 @@ export const APP_BAR_VARIANTS: Array<{
 ];
 
 const STORAGE_KEY = "matchpoint:app-bar-variant";
-const DEFAULT_VARIANT: AppBarVariant = "B";
+export const DEFAULT_APP_BAR_VARIANT: AppBarVariant = "B";
+const DEFAULT_VARIANT = DEFAULT_APP_BAR_VARIANT;
 
 interface AppBarVariantContextValue {
   variant: AppBarVariant;

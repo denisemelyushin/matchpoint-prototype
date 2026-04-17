@@ -78,7 +78,7 @@ export function FeedAppBar({
             iconSize={30}
           />
         ) : (
-          <Spacer />
+          <Spacer iconSize={30} />
         )}
       </div>
     );
@@ -208,8 +208,19 @@ function AddControl({
   );
 }
 
-function Spacer() {
-  return <div className="w-10 h-10 -mr-2" aria-hidden />;
+function Spacer({ iconSize = 24 }: { iconSize?: number }) {
+  // Mirror the width of MenuControl/AddControl (p-2 padding + icon) so the
+  // centred title stays centred even when the Add button is hidden (e.g. on
+  // the Players tab). Without this, bigger-icon variants visibly shift the
+  // title toward the right.
+  const size = iconSize + 16;
+  return (
+    <div
+      aria-hidden
+      className="-mr-2 shrink-0"
+      style={{ width: size, height: size }}
+    />
+  );
 }
 
 function FramedIconControl({

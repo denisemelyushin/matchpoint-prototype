@@ -40,7 +40,8 @@ export const TAB_BAR_VARIANTS: Array<{
 ];
 
 const STORAGE_KEY = "matchpoint:tab-bar-variant";
-const DEFAULT_VARIANT: TabBarVariant = "A";
+export const DEFAULT_TAB_BAR_VARIANT: TabBarVariant = "A";
+const DEFAULT_VARIANT = DEFAULT_TAB_BAR_VARIANT;
 
 interface TabBarVariantContextValue {
   variant: TabBarVariant;

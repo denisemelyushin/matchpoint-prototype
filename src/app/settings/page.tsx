@@ -3,32 +3,42 @@
 import { useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomTabs, type TabId } from "@/components/BottomTabs";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FeedAppBar } from "@/components/FeedAppBar";
 import { MenuProfileCard } from "@/components/MenuProfileCard";
 import { CheckIcon } from "@/components/icons";
 import { useAppStore } from "@/lib/app-store";
 import {
+  DEFAULT_TAB_BAR_VARIANT,
   TAB_BAR_VARIANTS,
   useTabBarVariant,
   type TabBarVariant,
 } from "@/lib/tab-bar-variant";
 import {
   APP_BAR_VARIANTS,
+  DEFAULT_APP_BAR_VARIANT,
   useAppBarVariant,
   type AppBarVariant,
 } from "@/lib/app-bar-variant";
 import {
+  DEFAULT_MENU_PROFILE_VARIANT,
   MENU_PROFILE_VARIANTS,
   useMenuProfileVariant,
   type MenuProfileVariant,
 } from "@/lib/menu-profile-variant";
-import { THEMES, useTheme, type ThemeDefinition } from "@/lib/theme";
+import {
+  DEFAULT_THEME,
+  THEMES,
+  useTheme,
+  type ThemeDefinition,
+} from "@/lib/theme";
 
 export default function SettingsPage() {
   return (
     <div className="flex flex-col h-full">
       <AppHeader title="Settings" />
       <div className="flex-1 overflow-y-auto px-4 pt-4 pb-10">
+        <ResetSection />
         <ThemeSection />
         <AppBarStyleSection />
         <MenuProfileStyleSection />
@@ -36,6 +46,60 @@ export default function SettingsPage() {
         <PreviewTabBar />
       </div>
     </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Reset-to-default control                                                  */
+/* -------------------------------------------------------------------------- */
+
+function ResetSection() {
+  const { themeId, setThemeId } = useTheme();
+  const { variant: appBarVariant, setVariant: setAppBarVariant } =
+    useAppBarVariant();
+  const { variant: menuProfileVariant, setVariant: setMenuProfileVariant } =
+    useMenuProfileVariant();
+  const { variant: tabBarVariant, setVariant: setTabBarVariant } =
+    useTabBarVariant();
+  const [open, setOpen] = useState(false);
+
+  const isDirty =
+    themeId !== DEFAULT_THEME ||
+    appBarVariant !== DEFAULT_APP_BAR_VARIANT ||
+    menuProfileVariant !== DEFAULT_MENU_PROFILE_VARIANT ||
+    tabBarVariant !== DEFAULT_TAB_BAR_VARIANT;
+
+  const handleConfirm = () => {
+    setThemeId(DEFAULT_THEME);
+    setAppBarVariant(DEFAULT_APP_BAR_VARIANT);
+    setMenuProfileVariant(DEFAULT_MENU_PROFILE_VARIANT);
+    setTabBarVariant(DEFAULT_TAB_BAR_VARIANT);
+    setOpen(false);
+  };
+
+  if (!isDirty) return null;
+
+  return (
+    <>
+      <section className="mb-8">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="w-full py-3 rounded-2xl border border-primary/60 bg-primary/[0.08] text-primary text-[14px] font-semibold active:opacity-80 transition-opacity"
+        >
+          Reset Default Settings
+        </button>
+      </section>
+      <ConfirmDialog
+        open={open}
+        title="Reset settings?"
+        message="This restores the default theme, app bar, menu profile, and tab bar styles. Your account and data are not affected."
+        confirmLabel="Reset"
+        cancelLabel="Cancel"
+        onConfirm={handleConfirm}
+        onCancel={() => setOpen(false)}
+      />
+    </>
   );
 }
 

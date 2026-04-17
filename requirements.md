@@ -70,9 +70,9 @@ The main app has a persistent layout:
 
 - **Top-left corner**: **Menu** button, opens the slide-out menu.
 - **Top-right corner**: **Add** button (plus icon) that creates new content for the active tab — a new post on Feed, a new game on Games, a new chat on Chats. The button is hidden on the Players tab; a spacer is rendered so the title stays centered.
-- The visual style of the top app bar can be switched from the **Settings** screen (see §16). The choice is persisted in `localStorage` under `matchpoint:app-bar-variant`. Available variants:
-  - **A — Classic** (default): stroke burger menu, centred page title, stroke plus icon (24 px).
-  - **B — Big icons**: same layout as Classic, but the burger and plus icons are rendered at a larger size (30 px) and the centred title is a fixed "MatchPoint Pro" brand label (same on every tab).
+- The visual style of the top app bar can be switched from the **Settings** screen (see §16). The choice is persisted in `localStorage` under `matchpoint:app-bar-variant`. Available variants, in the order they are displayed in Settings:
+  - **A — Big icons** (default): larger (30 px) burger and plus icons and a fixed "MatchPoint Pro" brand label in the centre (same on every tab).
+  - **B — Classic**: stroke burger menu, centred page title, stroke plus icon (24 px).
   - **C — Framed**: burger and plus icons tucked inside rounded-square surface tiles for a tactile "button" feel; centred title between them.
   - **D — Branded**: stroke burger, centred **"Matchpoint" wordmark** (replaces the page title), stroke plus.
 - **Bottom tab bar** with four tabs:
@@ -257,7 +257,7 @@ Full conversation view:
 ### 12.3 New chat (`/chat/new`)
 Opened from the top-right **Add** button on the Chats tab. Shows:
 - A search input for filtering players by name or email.
-- A list of all other users.
+- A list of all other users. Each row shows the player's avatar, name, and email — **no skill level** chip, since skill is not relevant when choosing someone to message.
 - Selecting a player opens (or creates) a chat with them and jumps to it.
 
 ---
@@ -293,6 +293,7 @@ Reached from the **Settings** entry in the slide menu. Regular sub-page layout (
 
 Sections, in order:
 
+- **Reset Default Settings** — a full-width, rounded-rectangle button in the primary accent colour (primary-tinted fill, primary-coloured border and label) rendered at the very top of the page, above all other sections. It is shown **only when at least one setting differs from its default** (theme, app bar, menu profile, or tab bar). Tapping it opens a confirmation dialog ("Reset settings?") explaining that the action restores the default theme, app bar, menu profile, and tab bar styles without touching account data. Confirming applies every default (`Midnight Lime` theme, app bar **A · Big icons**, menu profile **A · Airy + hint**, tab bar **A · Floating dock**) instantly, persists the reset to `localStorage`, and the button vanishes again until the user next customises something.
 - **App theme** — a picker of seven named colour themes tuned for the product (sport/social): four dark (`Midnight Lime` — default; `Court Blue`; `Ember`; `Violet Rally`) and three light (`Daylight`; `Paper`; `Coral`). Each option is rendered as a swatch tile showing the theme's background, surface, and primary accent; the active theme gets a primary-coloured ring and check badge. Selecting a theme:
   - Instantly re-skins the entire app by swapping a set of CSS custom properties (`--app-bg`, `--app-fg`, `--app-primary`, `--app-surface`, `--app-border`, `--app-muted`, …) via `[data-theme="…"]` on `<html>`.
   - Persists the choice in `localStorage` under `matchpoint:theme` and is applied before hydration by a small inline script in the document head, so light-theme users don't get a dark-theme flash on reload.
@@ -320,4 +321,4 @@ Sections, in order:
   - Marks the selected row with a filled primary-coloured check indicator; others show a neutral outlined circle.
 - **Preview** — a demo tab bar rendered inline below the variant list, framed inside a rounded card with a subtle border. It uses the same four tabs (Feed, Games, Players, Chats) and adopts whichever variant is currently selected, so changes in the list re-skin the preview immediately. Tapping a tab in the preview only updates its local active state — it does **not** navigate anywhere, so users can explore the active/inactive transitions of each style without leaving the Settings screen.
 
-The screen is a container for future account/app preferences; the app theme picker, app bar style picker, menu profile style picker, tab bar style section, and its preview ship today.
+The screen is a container for future account/app preferences; the reset-default-settings button, app theme picker, app bar style picker, menu profile style picker, tab bar style section, and its preview ship today.

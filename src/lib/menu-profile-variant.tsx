@@ -46,7 +46,8 @@ export const MENU_PROFILE_VARIANTS: Array<{
 ];
 
 const STORAGE_KEY = "matchpoint:menu-profile-variant";
-const DEFAULT_VARIANT: MenuProfileVariant = "D";
+export const DEFAULT_MENU_PROFILE_VARIANT: MenuProfileVariant = "D";
+const DEFAULT_VARIANT = DEFAULT_MENU_PROFILE_VARIANT;
 
 interface MenuProfileVariantContextValue {
   variant: MenuProfileVariant;
