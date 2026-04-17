@@ -70,6 +70,11 @@ The main app has a persistent layout:
 
 - **Top-left corner**: **Menu** button, opens the slide-out menu.
 - **Top-right corner**: **Add** button (plus icon) that creates new content for the active tab — a new post on Feed, a new game on Games, a new chat on Chats. The button is hidden on the Players tab; a spacer is rendered so the title stays centered.
+- The visual style of the top app bar can be switched from the **Settings** screen (see §16). The choice is persisted in `localStorage` under `matchpoint:app-bar-variant`. Available variants:
+  - **A — Classic** (default): stroke burger menu, centred page title, stroke plus icon (24 px).
+  - **B — Big icons**: same layout as Classic, but the burger and plus icons are rendered at a larger size (30 px) and the centred title is a fixed "MatchPoint Pro" brand label (same on every tab).
+  - **C — Framed**: burger and plus icons tucked inside rounded-square surface tiles for a tactile "button" feel; centred title between them.
+  - **D — Branded**: stroke burger, centred **"Matchpoint" wordmark** (replaces the page title), stroke plus.
 - **Bottom tab bar** with four tabs:
   1. **Feed**
   2. **Games**
@@ -269,10 +274,20 @@ Sections, in order:
   - Instantly re-skins the entire app by swapping a set of CSS custom properties (`--app-bg`, `--app-fg`, `--app-primary`, `--app-surface`, `--app-border`, `--app-muted`, …) via `[data-theme="…"]` on `<html>`.
   - Persists the choice in `localStorage` under `matchpoint:theme` and is applied before hydration by a small inline script in the document head, so light-theme users don't get a dark-theme flash on reload.
   - Updates the mobile browser chrome colour (`<meta name="theme-color">`) to match.
+- **App bar style** — a picker of four visual variants for the top app bar used across the Feed, Games, Players and Chats screens. Each row is a card with an inline live preview of that variant rendered above its label and description:
+  - **A · Classic** (default) — stroke burger, centred bold page title, stroke plus (24 px icons).
+  - **B · Branded** — stroke burger, centred "Matchpoint" wordmark (replaces the title), stroke plus.
+  - **C · Framed** — burger and plus icons wrapped in rounded-square surface tiles; centred title between them.
+  - **D · Big icons** — same layout as Classic but with larger (30 px) burger and plus icons; the centre shows a fixed "MatchPoint Pro" brand title.
+
+  The preview inside each card is purely decorative (static elements, not nested buttons) so the whole card acts as a single selection control. Selecting a variant:
+  - Instantly re-skins the top bar everywhere it appears.
+  - Persists the choice in `localStorage` under `matchpoint:app-bar-variant` so it survives reloads.
+  - Marks the selected row with a filled primary-coloured check indicator; others show a neutral outlined circle.
 - **Tab bar style** — radio-style list of the four visual variants available for the bottom tab bar (Floating dock, Sliding pill, Expanding pill, Indicator line). Selecting an option:
   - Instantly re-skins the bottom tab bar across the app.
   - Persists the choice in `localStorage` under `matchpoint:tab-bar-variant` so it survives reloads.
   - Marks the selected row with a filled primary-coloured check indicator; others show a neutral outlined circle.
 - **Preview** — a demo tab bar rendered inline below the variant list, framed inside a rounded card with a subtle border. It uses the same four tabs (Feed, Games, Players, Chats) and adopts whichever variant is currently selected, so changes in the list re-skin the preview immediately. Tapping a tab in the preview only updates its local active state — it does **not** navigate anywhere, so users can explore the active/inactive transitions of each style without leaving the Settings screen.
 
-The screen is a container for future account/app preferences; the app theme picker, tab bar style section, and its preview ship today.
+The screen is a container for future account/app preferences; the app theme picker, app bar style picker, tab bar style section, and its preview ship today.

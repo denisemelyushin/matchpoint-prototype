@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import { AppStoreProvider } from "@/lib/app-store";
 import { TabBarVariantProvider } from "@/lib/tab-bar-variant";
+import { AppBarVariantProvider } from "@/lib/app-bar-variant";
 import { ThemeProvider, THEME_INIT_SCRIPT } from "@/lib/theme";
 
 const geistSans = Geist({
@@ -52,7 +53,9 @@ export default function RootLayout({
         <div className="relative w-full h-full max-w-[480px] overflow-hidden">
           <ThemeProvider>
             <AppStoreProvider>
-              <TabBarVariantProvider>{children}</TabBarVariantProvider>
+              <TabBarVariantProvider>
+                <AppBarVariantProvider>{children}</AppBarVariantProvider>
+              </TabBarVariantProvider>
             </AppStoreProvider>
           </ThemeProvider>
         </div>

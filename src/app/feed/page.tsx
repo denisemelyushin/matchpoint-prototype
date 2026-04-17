@@ -9,7 +9,8 @@ import { PlayerCard } from "@/components/PlayerCard";
 import { ChatListItem } from "@/components/ChatListItem";
 import { BottomTabs, type TabId } from "@/components/BottomTabs";
 import { SlideMenu } from "@/components/SlideMenu";
-import { MenuIcon, PlusIcon } from "@/components/icons";
+import { FeedAppBar } from "@/components/FeedAppBar";
+import { PlusIcon } from "@/components/icons";
 
 const TITLES: Record<TabId, string> = {
   feed: "Feed",
@@ -96,31 +97,14 @@ export default function FeedPage() {
           />
         )}
 
-        <div className="flex items-center justify-between px-4 pt-12 pb-3 bg-background/80 backdrop-blur-xl sticky top-0 z-30">
-        <button
-          onClick={() => setMenuOpen(true)}
-          className="p-2 -ml-2 active:scale-90 transition-transform"
-          aria-label="Open menu"
-        >
-          <MenuIcon size={24} color="var(--color-foreground)" />
-        </button>
-
-        <h1 className="text-lg font-bold text-foreground">
-          {TITLES[activeTab]}
-        </h1>
-
-        {showAdd ? (
-          <button
-            onClick={handleAddClick}
-            className="p-2 -mr-2 active:scale-90 transition-transform"
-            aria-label={`Create new ${activeTab === "chats" ? "chat" : activeTab.slice(0, -1)}`}
-          >
-            <PlusIcon size={24} color="var(--color-foreground)" />
-          </button>
-        ) : (
-          <div className="w-10 h-10 -mr-2" aria-hidden />
-        )}
-      </div>
+        <FeedAppBar
+          title={TITLES[activeTab]}
+          onMenu={() => setMenuOpen(true)}
+          onAdd={showAdd ? handleAddClick : undefined}
+          addLabel={`Create new ${
+            activeTab === "chats" ? "chat" : activeTab.slice(0, -1)
+          }`}
+        />
 
       <div className="flex-1 overflow-y-auto">
         {activeTab === "feed" && (

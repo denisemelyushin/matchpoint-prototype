@@ -3,12 +3,18 @@
 import { useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomTabs, type TabId } from "@/components/BottomTabs";
+import { FeedAppBar } from "@/components/FeedAppBar";
 import { CheckIcon } from "@/components/icons";
 import {
   TAB_BAR_VARIANTS,
   useTabBarVariant,
   type TabBarVariant,
 } from "@/lib/tab-bar-variant";
+import {
+  APP_BAR_VARIANTS,
+  useAppBarVariant,
+  type AppBarVariant,
+} from "@/lib/app-bar-variant";
 import { THEMES, useTheme, type ThemeDefinition } from "@/lib/theme";
 
 export default function SettingsPage() {
@@ -17,6 +23,7 @@ export default function SettingsPage() {
       <AppHeader title="Settings" />
       <div className="flex-1 overflow-y-auto px-4 pt-4 pb-10">
         <ThemeSection />
+        <AppBarStyleSection />
         <TabBarStyleSection />
         <PreviewTabBar />
       </div>
@@ -131,6 +138,97 @@ function ThemeTile({ theme, selected, onSelect }: ThemeTileProps) {
           <CheckIcon size={14} color="var(--app-primary-on)" />
         </div>
       )}
+    </button>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  App-bar style                                                             */
+/* -------------------------------------------------------------------------- */
+
+function AppBarStyleSection() {
+  const { variant, setVariant } = useAppBarVariant();
+  return (
+    <section className="mb-8">
+      <div className="mb-4 px-1">
+        <h2 className="text-[15px] font-semibold text-foreground uppercase tracking-wider">
+          App bar style
+        </h2>
+        <p className="text-muted text-[13px] mt-1 leading-relaxed">
+          Pick how the top bar looks on the Feed, Games, Players and Chats
+          screens.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        {APP_BAR_VARIANTS.map((option) => (
+          <AppBarVariantRow
+            key={option.id}
+            id={option.id}
+            label={option.label}
+            description={option.description}
+            selected={variant === option.id}
+            onSelect={() => setVariant(option.id)}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+interface AppBarVariantRowProps {
+  id: AppBarVariant;
+  label: string;
+  description: string;
+  selected: boolean;
+  onSelect: () => void;
+}
+
+function AppBarVariantRow({
+  id,
+  label,
+  description,
+  selected,
+  onSelect,
+}: AppBarVariantRowProps) {
+  return (
+    <button
+      onClick={onSelect}
+      aria-pressed={selected}
+      className={`w-full text-left rounded-2xl border transition-colors overflow-hidden active:scale-[0.99] ${
+        selected
+          ? "border-primary/60 bg-primary/[0.06]"
+          : "border-border/60 bg-surface"
+      }`}
+    >
+      {/* Preview */}
+      <div className="relative border-b border-border/40 bg-background/60">
+        <FeedAppBar
+          variant={id}
+          title="Feed"
+          compact
+          decorative
+        />
+      </div>
+      {/* Label */}
+      <div className="flex items-start gap-3 p-4">
+        <div
+          className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+            selected ? "bg-primary" : "border-2 border-border bg-transparent"
+          }`}
+          aria-hidden
+        >
+          {selected && <CheckIcon size={12} color="var(--app-primary-on)" />}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-foreground text-[15px] leading-tight">
+            {label}
+          </p>
+          <p className="text-muted text-[13px] mt-1 leading-relaxed">
+            {description}
+          </p>
+        </div>
+      </div>
     </button>
   );
 }
