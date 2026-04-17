@@ -69,14 +69,13 @@ A mobile-first web app prototype for connecting pickleball players. This documen
 The main app has a persistent layout:
 
 - **Top-left corner**: **Menu** button, opens the slide-out menu.
-- **Top-right corner**: **Profile** button (shows current user's avatar), opens the profile screen.
+- **Top-right corner**: **Add** button (plus icon) that creates new content for the active tab — a new post on Feed, a new game on Games, a new chat on Chats. The button is hidden on the Players tab (users list is read-only); a spacer is rendered so the title stays centered.
 - **Bottom tab bar** with four tabs:
   1. **Feed**
   2. **Games**
   3. **Players**
   4. **Chats**
 - Active tab is highlighted in the primary green color; inactive tabs are muted grey.
-- A floating action button (FAB) appears on Feed, Games, and Chats to create new content for the active tab; it is anchored to the app frame and does **not** scroll with content.
 
 ## 7. Slide Menu
 
@@ -143,7 +142,7 @@ Private posts (visible only to the author) show a small lock icon next to the na
 - A text input is always visible at the bottom; users can send a new comment (Enter to send; Send button).
 
 ### 9.4 Create post (`/post/new`)
-Opened from the Feed FAB. Users can:
+Opened from the top-right **Add** button on the Feed tab. Users can:
 - Enter text content.
 - Add an **image** (optional; picked from device).
 - Add a **location** (optional, free text).
@@ -175,7 +174,7 @@ Every game card shows a single primary action button whose state depends on the 
 - **You're hosting** — shown as a disabled state when the current user is the host of the game.
 
 ### 10.3 Create game (`/game/new`)
-Opened from the Games FAB. Fields:
+Opened from the top-right **Add** button on the Games tab. Fields:
 - **Court** — dropdown of preset courts, with a "+ Add custom court" option that reveals a free-text input.
 - **Date & time** (native datetime picker).
 - **Min skill level** (Beginner / Intermediate / Advanced / Pro).
@@ -214,7 +213,7 @@ Full conversation view:
 - Enter to send.
 
 ### 12.3 New chat (`/chat/new`)
-Opened from the Chats FAB. Shows:
+Opened from the top-right **Add** button on the Chats tab. Shows:
 - A search input for filtering players by name or email.
 - A list of all other users.
 - Selecting a player opens (or creates) a chat with them and jumps to it.

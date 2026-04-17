@@ -9,8 +9,6 @@ import { PlayerCard } from "@/components/PlayerCard";
 import { ChatListItem } from "@/components/ChatListItem";
 import { BottomTabs, type TabId } from "@/components/BottomTabs";
 import { SlideMenu } from "@/components/SlideMenu";
-import { Avatar } from "@/components/Avatar";
-import { FAB } from "@/components/FAB";
 import { MenuIcon, PlusIcon } from "@/components/icons";
 
 const TITLES: Record<TabId, string> = {
@@ -22,8 +20,7 @@ const TITLES: Record<TabId, string> = {
 
 export default function FeedPage() {
   const router = useRouter();
-  const { currentUser, users, posts, games, chats, currentUserId, getUser } =
-    useAppStore();
+  const { users, posts, games, chats, currentUserId, getUser } = useAppStore();
   const [activeTab, setActiveTab] = useState<TabId>("feed");
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -47,7 +44,7 @@ export default function FeedPage() {
     });
   }, [chats]);
 
-  const handleFabClick = () => {
+  const handleAddClick = () => {
     switch (activeTab) {
       case "feed":
         router.push("/post/new");
@@ -63,7 +60,7 @@ export default function FeedPage() {
     }
   };
 
-  const showFab = activeTab !== "players";
+  const showAdd = activeTab !== "players";
 
   return (
     <div className="relative flex flex-col h-full bg-background">
@@ -80,17 +77,17 @@ export default function FeedPage() {
           {TITLES[activeTab]}
         </h1>
 
-        <button
-          onClick={() => router.push("/profile")}
-          className="p-1 -mr-1 active:scale-90 transition-transform"
-          aria-label="Open profile"
-        >
-          <Avatar
-            name={currentUser.name}
-            initials={currentUser.initials}
-            size={32}
-          />
-        </button>
+        {showAdd ? (
+          <button
+            onClick={handleAddClick}
+            className="p-2 -mr-2 active:scale-90 transition-transform"
+            aria-label={`Create new ${activeTab === "chats" ? "chat" : activeTab.slice(0, -1)}`}
+          >
+            <PlusIcon size={24} color="#EDEDED" />
+          </button>
+        ) : (
+          <div className="w-10 h-10 -mr-2" aria-hidden />
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -151,8 +148,6 @@ export default function FeedPage() {
         )}
 
       </div>
-
-      {showFab && <FAB onClick={handleFabClick} />}
 
       <BottomTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
