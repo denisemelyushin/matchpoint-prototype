@@ -10,7 +10,6 @@ import {
   FileTextIcon,
   LogOutIcon,
   TrashIcon,
-  ChevronRightIcon,
 } from "./icons";
 
 interface SlideMenuProps {
@@ -53,86 +52,88 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
       />
 
       <div
-        className={`absolute top-0 left-0 bottom-0 w-[290px] bg-surface z-50 transition-transform duration-300 ease-out flex flex-col ${
+        className={`absolute top-0 left-0 bottom-0 w-[300px] bg-surface z-50 transition-transform duration-300 ease-out flex flex-col rounded-tr-3xl rounded-br-3xl overflow-hidden ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="p-6 pt-14 border-b border-border relative">
+        <div className="p-5 pt-12 relative">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 active:scale-90 transition-transform"
+            className="absolute top-4 right-4 p-2 rounded-full active:bg-white/5 transition-colors"
             aria-label="Close menu"
           >
-            <XIcon size={20} color="#888" />
+            <XIcon size={18} color="#888" />
           </button>
 
-          <button
-            onClick={() => go("/profile")}
-            className="flex items-center gap-3 w-full text-left active:opacity-80 transition-opacity"
-          >
-            <Avatar
-              name={currentUser.name}
-              initials={currentUser.initials}
-              size={56}
-            />
-            <div className="min-w-0 flex-1">
-              <p className="font-bold text-foreground text-base truncate">
-                {currentUser.name}
-              </p>
-              <p className="text-muted text-sm truncate">
-                {currentUser.email}
-              </p>
-            </div>
-          </button>
+          <div className="bg-surface-light rounded-2xl p-4">
+            <button
+              onClick={() => go("/profile")}
+              className="flex items-center gap-3 w-full text-left active:opacity-80 transition-opacity"
+            >
+              <Avatar
+                name={currentUser.name}
+                initials={currentUser.initials}
+                size={52}
+              />
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-foreground text-[15px] truncate">
+                  {currentUser.name}
+                </p>
+                <p className="text-muted text-xs truncate mt-0.5">
+                  {currentUser.email}
+                </p>
+              </div>
+            </button>
 
-          <button
-            onClick={() => go("/profile/edit")}
-            className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary/10 text-primary font-medium text-sm active:scale-[0.98] transition-transform"
-          >
-            <EditIcon size={16} color="#96FE17" />
-            Edit Profile
-          </button>
+            <button
+              onClick={() => go("/profile/edit")}
+              className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-primary/10 text-primary font-medium text-[13px] active:scale-[0.98] transition-transform"
+            >
+              <EditIcon size={14} color="#96FE17" />
+              Edit Profile
+            </button>
+          </div>
         </div>
 
-        <div className="flex-1 py-2">
+        <div className="flex-1 px-3">
           <button
             onClick={() => go("/privacy")}
-            className="flex items-center gap-4 w-full px-6 py-4 active:bg-surface-light transition-colors"
+            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-white/5 transition-colors"
           >
-            <ShieldIcon size={20} color="#888" />
-            <span className="flex-1 text-foreground text-[15px] text-left">
+            <ShieldIcon size={18} color="#888" />
+            <span className="flex-1 text-foreground text-[14px] text-left">
               Privacy Policy
             </span>
-            <ChevronRightIcon size={16} color="#555" />
           </button>
 
           <button
             onClick={() => go("/terms")}
-            className="flex items-center gap-4 w-full px-6 py-4 active:bg-surface-light transition-colors"
+            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-white/5 transition-colors"
           >
-            <FileTextIcon size={20} color="#888" />
-            <span className="flex-1 text-foreground text-[15px] text-left">
+            <FileTextIcon size={18} color="#888" />
+            <span className="flex-1 text-foreground text-[14px] text-left">
               Terms of Use
             </span>
-            <ChevronRightIcon size={16} color="#555" />
           </button>
         </div>
 
-        <div className="border-t border-border p-4 pb-8 space-y-1">
+        <div className="p-3 pb-6 space-y-1">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-4 w-full px-2 py-3 rounded-xl active:bg-surface-light transition-colors"
+            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-white/5 transition-colors"
           >
-            <LogOutIcon size={20} color="#888" />
-            <span className="text-foreground text-[15px]">Log Out</span>
+            <LogOutIcon size={18} color="#888" />
+            <span className="text-foreground text-[14px]">Log Out</span>
           </button>
 
           <button
             onClick={handleDeleteAccount}
-            className="flex items-center gap-4 w-full px-2 py-3 rounded-xl active:bg-surface-light transition-colors"
+            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl bg-[#FF4757]/5 active:bg-[#FF4757]/10 transition-colors"
           >
-            <TrashIcon size={20} color="#FF4757" />
-            <span className="text-[#FF4757] text-[15px]">Delete Account</span>
+            <TrashIcon size={18} color="#FF4757" />
+            <span className="text-[#FF4757] text-[14px] font-medium">
+              Delete Account
+            </span>
           </button>
         </div>
       </div>

@@ -22,7 +22,7 @@ export function ChatListItem({
   return (
     <button
       onClick={() => router.push(`/chat/${chat.id}`)}
-      className="w-full flex items-center gap-3 px-4 py-3 active:bg-surface-light transition-colors text-left"
+      className="w-full flex items-center gap-3 px-4 py-3 active:bg-surface-light transition-colors text-left border-b border-white/5 last:border-b-0"
     >
       <Avatar name={otherUser.name} initials={otherUser.initials} size={48} />
       <div className="flex-1 min-w-0">

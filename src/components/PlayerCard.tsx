@@ -21,7 +21,7 @@ export function PlayerCard({ player }: PlayerCardProps) {
   };
 
   return (
-    <div className="bg-surface rounded-2xl p-4 mb-3 flex items-center gap-3">
+    <div className="bg-surface border border-border/60 rounded-2xl p-4 mb-3 flex items-center gap-3">
       <Avatar name={player.name} initials={player.initials} size={52} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">

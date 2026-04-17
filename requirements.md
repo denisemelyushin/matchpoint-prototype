@@ -69,13 +69,19 @@ A mobile-first web app prototype for connecting pickleball players. This documen
 The main app has a persistent layout:
 
 - **Top-left corner**: **Menu** button, opens the slide-out menu.
-- **Top-right corner**: **Add** button (plus icon) that creates new content for the active tab — a new post on Feed, a new game on Games, a new chat on Chats. The button is hidden on the Players tab (users list is read-only); a spacer is rendered so the title stays centered.
-- **Bottom tab bar** with four tabs:
+- **Top-right corner**: **Add** button (plus icon) that creates new content for the active tab — a new post on Feed, a new game on Games, a new chat on Chats. The button is hidden on the Players and Test tabs; a spacer is rendered so the title stays centered.
+- **Bottom tab bar** with five tabs:
   1. **Feed**
   2. **Games**
   3. **Players**
   4. **Chats**
+  5. **Test** — prototype-only playground for trying different tab-bar visual styles.
 - Active tab is highlighted in the primary green color; inactive tabs are muted grey.
+- The **Test** tab exposes a variant switcher; selecting an option instantly re-skins the bottom tab bar. The choice is persisted in `localStorage` under `matchpoint:tab-bar-variant` so it survives reloads. Available variants:
+  - **A — Floating dock**: rounded capsule detached from the bottom edge with a soft shadow.
+  - **B — Sliding pill**: flush bar with a highlight pill that animates horizontally between tabs.
+  - **C — Expanding pill (Material 3)**: inactive tabs show icon only; the active tab expands to reveal its label.
+  - **D — Indicator line**: minimal — a short primary-coloured dash appears under the active tab.
 
 ## 7. Slide Menu
 
@@ -159,12 +165,11 @@ Shows all public games (and the current user's private games). Each **game card*
 - Host: name, avatar.
 - A small indicator for private games (lock icon).
 - A pill showing spots remaining or "Full".
-- Main info block (all in the same section, one per line):
-  - **Court** (e.g. "Riverside Courts").
-  - **Date and time** formatted in a human-friendly way.
-  - **Minimum skill level**.
-  - **Max players** and current number of players joined.
-  - **Notes** (optional).
+- Main info block organized for scannability:
+  - **Date and time** shown as the card headline (large, foreground).
+  - **Court** directly beneath the headline with a small muted location icon.
+  - A chip row with **minimum skill level** (e.g. `INTERMEDIATE+`) and **players joined / max players** (e.g. `3/4 PLAYERS`).
+  - **Notes** (optional) below the chip row.
 
 ### 10.2 Join button
 Every game card shows a single primary action button whose state depends on the current user:

@@ -34,7 +34,7 @@ export function PostCard({ post }: PostCardProps) {
 
   return (
     <div
-      className="bg-surface rounded-2xl p-4 mb-3 active:bg-surface-light transition-colors cursor-pointer"
+      className="bg-surface border border-border/60 rounded-2xl p-4 mb-3 active:bg-surface-light transition-colors cursor-pointer"
       onClick={() => router.push(`/post/${post.id}`)}
     >
       <div className="flex items-center gap-3 mb-3">
@@ -78,18 +78,22 @@ export function PostCard({ post }: PostCardProps) {
         />
       )}
 
-      <div className="flex items-center gap-6 pt-2 border-t border-border">
+      <div className="flex items-center gap-5 -mb-1">
         <button
           onClick={handleLike}
-          className="flex items-center gap-1.5 active:scale-95 transition-transform"
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 -ml-2.5 rounded-full active:scale-95 transition-all ${
+            post.liked ? "bg-[#FF4757]/10" : "active:bg-white/5"
+          }`}
         >
           <HeartIcon
-            size={20}
+            size={18}
             color={post.liked ? "#FF4757" : "#888"}
             filled={post.liked}
           />
           <span
-            className={`text-sm ${post.liked ? "text-[#FF4757]" : "text-muted"}`}
+            className={`text-[13px] font-medium ${
+              post.liked ? "text-[#FF4757]" : "text-muted"
+            }`}
           >
             {post.likes}
           </span>
@@ -100,10 +104,12 @@ export function PostCard({ post }: PostCardProps) {
             e.stopPropagation();
             handleCommentsClick();
           }}
-          className="flex items-center gap-1.5 active:scale-95 transition-transform"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full active:bg-white/5 active:scale-95 transition-all"
         >
-          <MessageIcon size={20} color="#888" />
-          <span className="text-sm text-muted">{post.comments.length}</span>
+          <MessageIcon size={18} color="#888" />
+          <span className="text-[13px] font-medium text-muted">
+            {post.comments.length}
+          </span>
         </button>
       </div>
     </div>

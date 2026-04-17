@@ -103,7 +103,7 @@ const INITIAL_USERS: User[] = [
   },
 ];
 
-const NOW = Date.now();
+import { REFERENCE_NOW as NOW } from "./time";
 
 const INITIAL_POSTS: Post[] = [
   {

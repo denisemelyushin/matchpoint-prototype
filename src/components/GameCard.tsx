@@ -4,14 +4,7 @@ import type { Game } from "@/lib/types";
 import { useAppStore } from "@/lib/app-store";
 import { formatDateTime } from "@/lib/format";
 import { Avatar } from "./Avatar";
-import {
-  CalendarIcon,
-  CheckIcon,
-  LockIcon,
-  MapPinIcon,
-  TrophyIcon,
-  UsersIcon,
-} from "./icons";
+import { CheckIcon, LockIcon, MapPinIcon } from "./icons";
 
 interface GameCardProps {
   game: Game;
@@ -28,8 +21,8 @@ export function GameCard({ game }: GameCardProps) {
   const isFull = spotsLeft <= 0;
 
   return (
-    <div className="bg-surface rounded-2xl p-4 mb-3">
-      <div className="flex items-center gap-3 mb-3">
+    <div className="bg-surface border border-border/60 rounded-2xl p-4 mb-3">
+      <div className="flex items-center gap-3 mb-4">
         <Avatar name={host.name} initials={host.initials} size={40} />
         <div className="flex-1 min-w-0 flex items-center gap-1.5">
           <p className="font-semibold text-foreground text-[15px] leading-tight truncate">
@@ -38,41 +31,40 @@ export function GameCard({ game }: GameCardProps) {
           {game.isPrivate && <LockIcon size={12} color="#888" />}
         </div>
         {isFull ? (
-          <span className="text-xs font-medium text-muted bg-surface-light px-2 py-1 rounded-full">
+          <span className="text-xs font-medium text-muted bg-white/5 px-2.5 py-1 rounded-full">
             Full
           </span>
         ) : (
-          <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">
+          <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
             {spotsLeft} spot{spotsLeft === 1 ? "" : "s"}
           </span>
         )}
       </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 text-[14px]">
-          <MapPinIcon size={14} color="#96FE17" />
-          <span className="text-foreground">{game.court}</span>
+      <div className="mb-3">
+        <p className="text-foreground text-[17px] font-semibold leading-tight tracking-tight">
+          {formatDateTime(game.date)}
+        </p>
+        <div className="flex items-center gap-1.5 mt-1">
+          <MapPinIcon size={13} color="#888" />
+          <span className="text-muted text-[13px]">{game.court}</span>
         </div>
-        <div className="flex items-center gap-2 text-[14px]">
-          <CalendarIcon size={14} color="#96FE17" />
-          <span className="text-foreground">{formatDateTime(game.date)}</span>
-        </div>
-        <div className="flex items-center gap-2 text-[14px]">
-          <TrophyIcon size={14} color="#96FE17" />
-          <span className="text-foreground">{game.minSkill}+ level</span>
-        </div>
-        <div className="flex items-center gap-2 text-[14px]">
-          <UsersIcon size={14} color="#96FE17" />
-          <span className="text-foreground">
-            {game.playerIds.length} / {game.maxPlayers} players
-          </span>
-        </div>
-        {game.notes && (
-          <p className="text-muted text-[14px] leading-relaxed pt-1">
-            {game.notes}
-          </p>
-        )}
       </div>
+
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-[11px] font-medium uppercase tracking-wider text-muted bg-white/5 px-2 py-1 rounded-md">
+          {game.minSkill}+
+        </span>
+        <span className="text-[11px] font-medium uppercase tracking-wider text-muted bg-white/5 px-2 py-1 rounded-md">
+          {game.playerIds.length}/{game.maxPlayers} players
+        </span>
+      </div>
+
+      {game.notes && (
+        <p className="text-muted text-[13px] leading-relaxed mt-3">
+          {game.notes}
+        </p>
+      )}
 
       <div className="mt-4">
         <GameActionButton
@@ -106,7 +98,7 @@ function GameActionButton({
     return (
       <button
         disabled
-        className="w-full py-2.5 rounded-xl bg-surface-light text-muted text-sm font-semibold cursor-default flex items-center justify-center gap-2"
+        className="w-full py-2.5 rounded-xl bg-white/5 text-muted text-sm font-semibold cursor-default flex items-center justify-center gap-2"
       >
         <CheckIcon size={16} color="#888" />
         You&apos;re hosting
@@ -133,7 +125,7 @@ function GameActionButton({
     return (
       <button
         disabled
-        className="w-full py-2.5 rounded-xl bg-surface-light text-muted text-sm font-semibold cursor-not-allowed"
+        className="w-full py-2.5 rounded-xl bg-white/5 text-muted text-sm font-semibold cursor-not-allowed"
       >
         Game full
       </button>
