@@ -66,7 +66,7 @@ export default function FeedPage() {
   const showFab = activeTab !== "players";
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="relative flex flex-col h-full bg-background">
       <div className="flex items-center justify-between px-4 pt-12 pb-3 bg-background/80 backdrop-blur-xl sticky top-0 z-30">
         <button
           onClick={() => setMenuOpen(true)}
@@ -93,7 +93,7 @@ export default function FeedPage() {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto relative">
+      <div className="flex-1 overflow-y-auto">
         {activeTab === "feed" && (
           <div className="px-4 py-2 pb-24">
             {visiblePosts.length === 0 ? (
@@ -150,8 +150,9 @@ export default function FeedPage() {
           </div>
         )}
 
-        {showFab && <FAB onClick={handleFabClick} />}
       </div>
+
+      {showFab && <FAB onClick={handleFabClick} />}
 
       <BottomTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
