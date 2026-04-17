@@ -69,7 +69,7 @@ A mobile-first web app prototype for connecting pickleball players. This documen
 The main app has a persistent layout:
 
 - **Top-left corner**: **Menu** button, opens the slide-out menu.
-- **Top-right corner**: **Add** button (plus icon) that creates new content for the active tab — a new post on Feed, a new game on Games, a new chat on Chats. The button is hidden on the Players tab; a spacer is rendered so the title stays centered. Tapping **Add** pushes the creation screen (`/post/new`, `/game/new`, `/chat/new`); hitting the back arrow on any of those screens returns to the originating tab (e.g. Games → `/game/new` → Back → Games), because the Feed page mirrors its active tab into the URL via `?tab=…` so the back stack always points at the tab the user was on.
+- **Top-right corner**: **Add** button (plus icon) that creates new content for the active tab — a new post on Feed, a new game on Games, a new chat on Chats. The button is hidden on the Players tab; a spacer is rendered so the title stays centered. Tapping **Add** pushes the creation screen (`/post/new`, `/game/new`, `/chat/new`); hitting the back arrow on any of those screens returns to the originating tab because each tab is its own top-level route (`/feed`, `/games`, `/players`, `/chats`) — so the browser back stack naturally points at the tab the user was on (e.g. Games → `/game/new` → Back → `/games`).
 - The visual style of the top app bar can be switched from the **Settings** screen (see §16). The choice is persisted in `localStorage` under `matchpoint:app-bar-variant`. Available variants, in the order they are displayed in Settings:
   - **A — Big icons** (default): larger (30 px) burger and plus icons and a fixed "MatchPoint Pro" brand label in the centre (same on every tab).
   - **B — Classic**: stroke burger menu, centred page title, stroke plus icon (24 px).
@@ -239,7 +239,7 @@ Shows all existing conversations for the current user, sorted by most recent mes
 
 ### 12.2 Chat detail (`/chat/[id]`)
 Full conversation view:
-- Header with the other user's name and avatar and a back button. The back button always returns to the **Chats** tab of the main app (`/feed?tab=chats`) regardless of how the user arrived — it does not fall back to arbitrary browser history.
+- Header with the other user's name and avatar and a back button. The back button always returns to the **Chats** tab of the main app (`/chats`) regardless of how the user arrived — it does not fall back to arbitrary browser history.
 - Scrollable message list, auto-scrolling to the latest message.
 - Message bubbles styled differently for mine (right, primary color) and theirs (left, surface color).
 - **Bubble grouping**: consecutive messages from the same sender on the same day are stacked tightly (small top margin) and their connecting corner is flattened — the top-right for own messages, the top-left for received messages — mirroring the existing "tail" on the bottom corner so grouped bubbles read as a single stack. Outer corners use a 12px (`rounded-xl`) radius while tail and stack-facing corners use a gentler 8px (`rounded-lg`) — enough to soften middle-of-group bubbles without making standalone ones feel pill-shaped. When the sender changes ("turn change"), a larger vertical gap appears and the top corners return to the full 12px radius. This matches the cadence used by WhatsApp and Telegram.

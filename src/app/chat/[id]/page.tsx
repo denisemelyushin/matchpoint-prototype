@@ -21,7 +21,7 @@ export default function ChatDetailPage({
   const [draft, setDraft] = useState("");
   const endRef = useRef<HTMLDivElement | null>(null);
 
-  const backToChats = () => router.push("/feed?tab=chats");
+  const backToChats = () => router.push("/chats");
 
   const chat = getChat(id);
   const otherUserId = chat?.participantIds.find((p) => p !== currentUserId);
