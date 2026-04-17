@@ -188,8 +188,8 @@ Each **game card** shows:
 - A small indicator for private games (lock icon).
 - A pill showing spots remaining or "Full".
 - Main info block organized for scannability:
-  - **Date and time** shown as the card headline (large, foreground).
-  - **Court** directly beneath the headline with a small muted location icon.
+  - **Date & time headline**: plain text (no icon) combining the date and time joined by a muted middle-dot. When the game falls on a nearby day the day portion collapses to a relative word (`Today`, `Tomorrow`, or `Yesterday` for just-past games) with the absolute date omitted — e.g. `Today · 9:00 AM`. For any other date the short absolute date is used instead — e.g. `Sat, Apr 18 · 9:00 AM`. Both the day and time share the prominent headline treatment; the separator stays muted.
+  - **Court row**: small muted map-pin icon + court name.
   - A chip row with **minimum skill level** (e.g. `INTERMEDIATE+`) and **players joined / max players** (e.g. `3/4 PLAYERS`).
   - **Notes** (optional) below the chip row.
 

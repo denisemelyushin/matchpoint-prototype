@@ -96,6 +96,41 @@ export function formatMessageDaySeparator(
   });
 }
 
+// Rich formatter for game cards: separates the day label from the time so the
+// UI can present them on different lines with distinct icons, and surfaces a
+// short relative label ("Today"/"Tomorrow"/"Yesterday") when the game falls on
+// a nearby day — matching the cadence used in the chat day separators.
+export function formatGameDate(
+  iso: string,
+  now: number = REFERENCE_NOW
+): { relative: string | null; dateLabel: string; time: string } {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) {
+    return { relative: null, dateLabel: iso, time: "" };
+  }
+
+  const diff = utcDayIndex(d.getTime()) - utcDayIndex(now);
+  let relative: string | null = null;
+  if (diff === 0) relative = "Today";
+  else if (diff === 1) relative = "Tomorrow";
+  else if (diff === -1) relative = "Yesterday";
+
+  const dateLabel = d.toLocaleDateString(LOCALE, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+
+  const time = d.toLocaleTimeString(LOCALE, {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "UTC",
+  });
+
+  return { relative, dateLabel, time };
+}
+
 export function toDatetimeLocalValue(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";

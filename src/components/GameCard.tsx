@@ -2,7 +2,7 @@
 
 import type { Game } from "@/lib/types";
 import { useAppStore } from "@/lib/app-store";
-import { formatDateTime } from "@/lib/format";
+import { formatGameDate } from "@/lib/format";
 import { Avatar } from "./Avatar";
 import { CheckIcon, LockIcon, MapPinIcon } from "./icons";
 
@@ -41,15 +41,7 @@ export function GameCard({ game }: GameCardProps) {
         )}
       </div>
 
-      <div className="mb-3">
-        <p className="text-foreground text-[17px] font-semibold leading-tight tracking-tight">
-          {formatDateTime(game.date)}
-        </p>
-        <div className="flex items-center gap-1.5 mt-1">
-          <MapPinIcon size={13} color="var(--color-muted)" />
-          <span className="text-muted text-[13px]">{game.court}</span>
-        </div>
-      </div>
+      <GameSchedule date={game.date} court={game.court} />
 
       <div className="flex items-center gap-1.5 flex-wrap">
         <span className="text-[11px] font-medium uppercase tracking-wider text-muted bg-foreground/5 px-2 py-1 rounded-md">
@@ -74,6 +66,27 @@ export function GameCard({ game }: GameCardProps) {
           onJoin={() => joinGame(game.id)}
           onLeave={() => leaveGame(game.id)}
         />
+      </div>
+    </div>
+  );
+}
+
+function GameSchedule({ date, court }: { date: string; court: string }) {
+  const { relative, dateLabel, time } = formatGameDate(date);
+  // Nearby days collapse to just the relative word (e.g. "Today · 9:00 AM") —
+  // showing the absolute date alongside would be redundant. Further-out games
+  // show the short absolute date instead.
+  const dayText = relative ?? dateLabel;
+  return (
+    <div className="mb-3 space-y-1">
+      <p className="text-foreground text-[17px] font-semibold leading-tight tracking-tight">
+        {dayText}
+        <span className="mx-1.5 text-muted font-normal">·</span>
+        {time}
+      </p>
+      <div className="flex items-center gap-2">
+        <MapPinIcon size={14} color="var(--color-muted)" />
+        <span className="text-muted text-[13px]">{court}</span>
       </div>
     </div>
   );
