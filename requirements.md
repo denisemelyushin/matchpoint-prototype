@@ -69,7 +69,7 @@ A mobile-first web app prototype for connecting pickleball players. This documen
 The main app has a persistent layout:
 
 - **Top-left corner**: **Menu** button, opens the slide-out menu.
-- **Top-right corner**: **Add** button (plus icon) that creates new content for the active tab — a new post on Feed, a new game on Games, a new chat on Chats. The button is hidden on the Players tab; a spacer is rendered so the title stays centered.
+- **Top-right corner**: **Add** button (plus icon) that creates new content for the active tab — a new post on Feed, a new game on Games, a new chat on Chats. The button is hidden on the Players tab; a spacer is rendered so the title stays centered. Tapping **Add** pushes the creation screen (`/post/new`, `/game/new`, `/chat/new`); hitting the back arrow on any of those screens returns to the originating tab (e.g. Games → `/game/new` → Back → Games), because the Feed page mirrors its active tab into the URL via `?tab=…` so the back stack always points at the tab the user was on.
 - The visual style of the top app bar can be switched from the **Settings** screen (see §16). The choice is persisted in `localStorage` under `matchpoint:app-bar-variant`. Available variants, in the order they are displayed in Settings:
   - **A — Big icons** (default): larger (30 px) burger and plus icons and a fixed "MatchPoint Pro" brand label in the centre (same on every tab).
   - **B — Classic**: stroke burger menu, centred page title, stroke plus icon (24 px).

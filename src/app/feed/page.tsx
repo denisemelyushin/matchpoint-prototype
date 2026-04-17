@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/app-store";
 import { PostCard } from "@/components/PostCard";
@@ -73,13 +73,27 @@ export default function FeedPage() {
   const [activeTab, setActiveTab] = useState<TabId>("feed");
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Pick up ?tab=… on mount so deep links (e.g. Back from a chat) land on the
-  // right tab without a flash of the default "feed" state.
+  // Keep the active tab and the URL in sync. On mount we pick up ?tab=… from
+  // the URL so deep links (e.g. Back from a chat or from /game/new) land on
+  // the right tab. On every subsequent tab change we mirror the new tab into
+  // the URL via replace, so the browser back stack always points at the tab
+  // the user was on when they tapped the + button.
+  const mountedRef = useRef(false);
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const param = new URLSearchParams(window.location.search).get("tab");
-    if (isTabId(param)) setActiveTab(param);
-  }, []);
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      const param = new URLSearchParams(window.location.search).get("tab");
+      if (isTabId(param)) setActiveTab(param);
+      return;
+    }
+    const targetSearch = activeTab === "feed" ? "" : `?tab=${activeTab}`;
+    const target = `/feed${targetSearch}`;
+    const current = window.location.pathname + window.location.search;
+    if (current !== target) {
+      router.replace(target, { scroll: false });
+    }
+  }, [activeTab, router]);
   const [playersFilter, setPlayersFilter] = useState<PlayersFilter>("all");
   const [gamesFilter, setGamesFilter] = useState<GamesFilter>("upcoming");
 
