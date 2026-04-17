@@ -65,7 +65,7 @@ export default function NewChatPage() {
                   <p className="font-semibold text-foreground text-[15px] truncate">
                     {u.name}
                   </p>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-muted bg-white/5 px-1.5 py-0.5 rounded">
                     {u.skillLevel}
                   </span>
                 </div>
