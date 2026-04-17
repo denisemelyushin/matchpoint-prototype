@@ -99,12 +99,12 @@ Open / close behavior:
 
 Menu contents, from top to bottom:
 
-1. **Profile card** at the top (rounded, slightly elevated surface) showing:
-   - User avatar
-   - Name
-   - Email
-   - Tapping the profile card opens the Profile screen.
-   - An **Edit Profile** button (primary-accented) inside the card links to the edit profile screen.
+1. **Profile card** at the top — its visual style is picked from Settings (see §16) and has four variants. In every variant the whole tile is a single tap target that opens the Edit Profile screen directly; there is never a separate edit button, and any pencil icon shown is purely decorative:
+   - **A · Classic** (default) — filled `surface-light` card with a roomy profile row (avatar 52, name, email).
+   - **B · Airy** — outlined card with a thin border and no filled background; same roomy profile row as Classic.
+   - **C · Compact** — filled `surface-light` card with a compact profile row (avatar 44, smaller name/email) and a small decorative pencil icon on the right as an edit hint.
+   - **D · Airy + hint** — outlined card (like B) with a roomy profile row plus a small decorative pencil icon on the right as an edit hint.
+   The chosen variant is persisted in `localStorage` under `matchpoint:menu-profile-variant`.
 2. **Settings** link — opens the Settings screen (see §16).
 3. **Privacy Policy** link (opens a page).
 4. **Terms of Use** link (opens a page).
@@ -276,18 +276,25 @@ Sections, in order:
   - Updates the mobile browser chrome colour (`<meta name="theme-color">`) to match.
 - **App bar style** — a picker of four visual variants for the top app bar used across the Feed, Games, Players and Chats screens. Each row is a card with an inline live preview of that variant rendered above its label and description:
   - **A · Classic** (default) — stroke burger, centred bold page title, stroke plus (24 px icons).
-  - **B · Branded** — stroke burger, centred "Matchpoint" wordmark (replaces the title), stroke plus.
+  - **B · Big icons** — same layout as Classic but with larger (30 px) burger and plus icons; the centre shows a fixed "MatchPoint Pro" brand title.
   - **C · Framed** — burger and plus icons wrapped in rounded-square surface tiles; centred title between them.
-  - **D · Big icons** — same layout as Classic but with larger (30 px) burger and plus icons; the centre shows a fixed "MatchPoint Pro" brand title.
+  - **D · Branded** — stroke burger, centred "Matchpoint" wordmark (replaces the title), stroke plus.
 
   The preview inside each card is purely decorative (static elements, not nested buttons) so the whole card acts as a single selection control. Selecting a variant:
   - Instantly re-skins the top bar everywhere it appears.
   - Persists the choice in `localStorage` under `matchpoint:app-bar-variant` so it survives reloads.
   - Marks the selected row with a filled primary-coloured check indicator; others show a neutral outlined circle.
+- **Menu profile style** — a picker of four visual variants for the profile card at the top of the slide-out menu. Each row renders a live, decorative preview of the card filled with the current user's name, email and initials. In every variant the whole tile is a single tap target that opens the Edit Profile screen directly; any pencil icon shown is purely decorative:
+  - **A · Classic** (default) — filled `surface-light` card with a roomy profile row.
+  - **B · Airy** — outlined card with a thin border and no filled background; same roomy profile row as Classic.
+  - **C · Compact** — filled `surface-light` card with a compact profile row and a small decorative pencil icon on the right as an edit hint.
+  - **D · Airy + hint** — outlined card like Airy with a small decorative pencil icon on the right as an edit hint.
+
+  Selecting a variant instantly re-skins the profile card in the slide-out menu and persists the choice in `localStorage` under `matchpoint:menu-profile-variant`.
 - **Tab bar style** — radio-style list of the four visual variants available for the bottom tab bar (Floating dock, Sliding pill, Expanding pill, Indicator line). Selecting an option:
   - Instantly re-skins the bottom tab bar across the app.
   - Persists the choice in `localStorage` under `matchpoint:tab-bar-variant` so it survives reloads.
   - Marks the selected row with a filled primary-coloured check indicator; others show a neutral outlined circle.
 - **Preview** — a demo tab bar rendered inline below the variant list, framed inside a rounded card with a subtle border. It uses the same four tabs (Feed, Games, Players, Chats) and adopts whichever variant is currently selected, so changes in the list re-skin the preview immediately. Tapping a tab in the preview only updates its local active state — it does **not** navigate anywhere, so users can explore the active/inactive transitions of each style without leaving the Settings screen.
 
-The screen is a container for future account/app preferences; the app theme picker, app bar style picker, tab bar style section, and its preview ship today.
+The screen is a container for future account/app preferences; the app theme picker, app bar style picker, menu profile style picker, tab bar style section, and its preview ship today.

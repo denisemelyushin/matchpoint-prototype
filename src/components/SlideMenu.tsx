@@ -2,9 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/app-store";
-import { Avatar } from "./Avatar";
+import { MenuProfileCard } from "./MenuProfileCard";
 import {
-  EditIcon,
   ShieldIcon,
   FileTextIcon,
   LogOutIcon,
@@ -41,36 +40,13 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
       className="absolute top-0 left-0 bottom-0 z-0 w-[280px] flex flex-col pt-12 bg-background"
     >
       <div className="px-5">
-        <div className="bg-surface-light rounded-2xl p-4">
-          <button
-            onClick={() => go("/profile")}
-            className="flex items-center gap-3 w-full text-left active:opacity-80 transition-opacity"
-            tabIndex={isOpen ? 0 : -1}
-          >
-            <Avatar
-              name={currentUser.name}
-              initials={currentUser.initials}
-              size={52}
-            />
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold text-foreground text-[15px] truncate">
-                {currentUser.name}
-              </p>
-              <p className="text-muted text-xs truncate mt-0.5">
-                {currentUser.email}
-              </p>
-            </div>
-          </button>
-
-          <button
-            onClick={() => go("/profile/edit")}
-            className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-primary/10 text-primary font-medium text-[13px] active:scale-[0.98] transition-transform"
-            tabIndex={isOpen ? 0 : -1}
-          >
-            <EditIcon size={14} color="var(--color-primary)" />
-            Edit Profile
-          </button>
-        </div>
+        <MenuProfileCard
+          name={currentUser.name}
+          email={currentUser.email}
+          initials={currentUser.initials}
+          onEdit={() => go("/profile/edit")}
+          tabIndex={isOpen ? 0 : -1}
+        />
       </div>
 
       <div className="flex-1 px-3 pt-3">

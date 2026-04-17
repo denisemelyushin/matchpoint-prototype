@@ -4,6 +4,7 @@ import "./globals.css";
 import { AppStoreProvider } from "@/lib/app-store";
 import { TabBarVariantProvider } from "@/lib/tab-bar-variant";
 import { AppBarVariantProvider } from "@/lib/app-bar-variant";
+import { MenuProfileVariantProvider } from "@/lib/menu-profile-variant";
 import { ThemeProvider, THEME_INIT_SCRIPT } from "@/lib/theme";
 
 const geistSans = Geist({
@@ -54,7 +55,11 @@ export default function RootLayout({
           <ThemeProvider>
             <AppStoreProvider>
               <TabBarVariantProvider>
-                <AppBarVariantProvider>{children}</AppBarVariantProvider>
+                <AppBarVariantProvider>
+                  <MenuProfileVariantProvider>
+                    {children}
+                  </MenuProfileVariantProvider>
+                </AppBarVariantProvider>
               </TabBarVariantProvider>
             </AppStoreProvider>
           </ThemeProvider>
