@@ -8,7 +8,6 @@ import {
   ShieldIcon,
   FileTextIcon,
   LogOutIcon,
-  TrashIcon,
   SlidersIcon,
 } from "./icons";
 
@@ -34,17 +33,6 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
   const handleLogout = () => {
     onClose();
     router.push("/");
-  };
-
-  const handleDeleteAccount = () => {
-    if (
-      confirm(
-        "Are you sure you want to delete your account? This action cannot be undone."
-      )
-    ) {
-      onClose();
-      router.push("/");
-    }
   };
 
   return (
@@ -120,7 +108,7 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
         </button>
       </div>
 
-      <div className="p-3 pb-6 space-y-1">
+      <div className="p-3 pb-6">
         <button
           onClick={handleLogout}
           className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-white/5 transition-colors"
@@ -128,17 +116,6 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
         >
           <LogOutIcon size={18} color="#888" />
           <span className="text-foreground text-[14px]">Log Out</span>
-        </button>
-
-        <button
-          onClick={handleDeleteAccount}
-          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl bg-[#FF4757]/5 active:bg-[#FF4757]/10 transition-colors"
-          tabIndex={isOpen ? 0 : -1}
-        >
-          <TrashIcon size={18} color="#FF4757" />
-          <span className="text-[#FF4757] text-[14px] font-medium">
-            Delete Account
-          </span>
         </button>
       </div>
     </aside>

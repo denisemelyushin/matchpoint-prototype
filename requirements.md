@@ -104,7 +104,6 @@ Menu contents, from top to bottom:
 3. **Privacy Policy** link (opens a page).
 4. **Terms of Use** link (opens a page).
 5. **Log Out** button — returns the user to the Welcome screen.
-6. **Delete Account** button — destructive styling with a tinted red background; confirms before returning to Welcome.
 
 ---
 
@@ -129,6 +128,8 @@ User can edit:
 - **Skill level** (one of: Beginner, Intermediate, Advanced, Pro)
 
 Header has a **Save** action that persists changes and returns to the previous screen.
+
+At the bottom of the screen, below a separator, there is a subtle **Delete account** text link. It is intentionally low-contrast (muted grey, no background, no icon) — it only picks up a soft rose tint on press. Tapping it opens a confirmation dialog; on confirm the user is returned to the Welcome screen.
 
 ---
 

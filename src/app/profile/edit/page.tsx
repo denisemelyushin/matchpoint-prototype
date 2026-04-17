@@ -52,6 +52,16 @@ export default function EditProfilePage() {
     router.back();
   };
 
+  const handleDeleteAccount = () => {
+    if (
+      confirm(
+        "Are you sure you want to delete your account? This action cannot be undone."
+      )
+    ) {
+      router.push("/");
+    }
+  };
+
   return (
     <div className="flex flex-col h-full bg-background">
       <AppHeader
@@ -141,6 +151,15 @@ export default function EditProfilePage() {
               ))}
             </Select>
           </div>
+        </div>
+
+        <div className="mt-10 pt-6 border-t border-border/60 flex justify-center">
+          <button
+            onClick={handleDeleteAccount}
+            className="px-3 py-2 text-[13px] text-muted hover:text-[#F87171] active:text-[#F87171] transition-colors"
+          >
+            Delete account
+          </button>
         </div>
       </div>
     </div>
