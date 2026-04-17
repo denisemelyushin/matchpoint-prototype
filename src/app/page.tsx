@@ -7,7 +7,7 @@ export default function WelcomePage() {
   const router = useRouter();
 
   return (
-    <div className="flex flex-col items-center justify-between h-full bg-background px-8 py-16">
+    <div className="flex flex-col items-center justify-between h-full overflow-hidden overscroll-none bg-background px-8 py-16 touch-none">
       <div className="flex-1" />
 
       <div className="flex flex-col items-center gap-5">

@@ -19,6 +19,9 @@
 
 html {
   background: #0A0A0A;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {

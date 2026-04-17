@@ -136,10 +136,10 @@ export default function OnboardingPage() {
   const isLast = currentStep === STEPS.length - 1;
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full overflow-hidden overscroll-none bg-background">
       <div
         ref={frameRef}
-        className="flex-1 overflow-hidden touch-pan-y select-none"
+        className="flex-1 overflow-hidden touch-none select-none"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
