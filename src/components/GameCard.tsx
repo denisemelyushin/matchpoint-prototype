@@ -31,16 +31,11 @@ export function GameCard({ game }: GameCardProps) {
     <div className="bg-surface rounded-2xl p-4 mb-3">
       <div className="flex items-center gap-3 mb-3">
         <Avatar name={host.name} initials={host.initials} size={40} />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <p className="font-semibold text-foreground text-[15px] leading-tight truncate">
-              {host.name}
-            </p>
-            {game.isPrivate && <LockIcon size={12} color="#888" />}
-          </div>
-          <p className="text-muted text-xs mt-0.5">
-            {isHost ? "you are hosting" : "hosting a game"}
+        <div className="flex-1 min-w-0 flex items-center gap-1.5">
+          <p className="font-semibold text-foreground text-[15px] leading-tight truncate">
+            {host.name}
           </p>
+          {game.isPrivate && <LockIcon size={12} color="#888" />}
         </div>
         {isFull ? (
           <span className="text-xs font-medium text-muted bg-surface-light px-2 py-1 rounded-full">
