@@ -220,6 +220,30 @@ const INITIAL_POSTS: Post[] = [
 const INITIAL_GAMES: Game[] = [
   {
     id: "g_1",
+    userId: CURRENT_USER_ID,
+    court: "Riverside Courts",
+    date: new Date(NOW + 5 * DAY).toISOString(),
+    minSkill: "Intermediate",
+    maxPlayers: 4,
+    notes: "Intermediate doubles — bring water and a good attitude!",
+    isPrivate: false,
+    playerIds: [CURRENT_USER_ID, "u_sc"],
+    createdAt: NOW - HOUR,
+  },
+  {
+    id: "g_2",
+    userId: "u_er",
+    court: "Sunset Park",
+    date: new Date(NOW + DAY).toISOString(),
+    minSkill: "Beginner",
+    maxPlayers: 8,
+    notes: "Casual morning session, all levels welcome.",
+    isPrivate: false,
+    playerIds: ["u_er", "u_tb", "u_rp", CURRENT_USER_ID],
+    createdAt: NOW - 5 * HOUR,
+  },
+  {
+    id: "g_3",
     userId: "u_dk",
     court: "Lakeview Recreation Center",
     date: new Date(NOW + 2 * DAY).toISOString(),
@@ -231,29 +255,6 @@ const INITIAL_GAMES: Game[] = [
     createdAt: NOW - 3 * HOUR,
   },
   {
-    id: "g_2",
-    userId: "u_er",
-    court: "Sunset Park",
-    date: new Date(NOW + DAY).toISOString(),
-    minSkill: "Beginner",
-    maxPlayers: 8,
-    notes: "Casual morning session, all levels welcome.",
-    isPrivate: false,
-    playerIds: ["u_er", "u_tb", "u_rp"],
-    createdAt: NOW - 5 * HOUR,
-  },
-  {
-    id: "g_3",
-    userId: "u_mj",
-    court: "Downtown Pickleball Center",
-    date: new Date(NOW + 3 * DAY).toISOString(),
-    minSkill: "Intermediate",
-    maxPlayers: 4,
-    isPrivate: false,
-    playerIds: ["u_mj", "u_jw"],
-    createdAt: NOW - DAY,
-  },
-  {
     id: "g_4",
     userId: "u_at",
     court: "Community Sports Complex",
@@ -262,8 +263,19 @@ const INITIAL_GAMES: Game[] = [
     maxPlayers: 4,
     notes: "Paddle demo afterwards!",
     isPrivate: false,
-    playerIds: ["u_at"],
+    playerIds: ["u_at", "u_mj", "u_jw", "u_rp"],
     createdAt: NOW - 2 * DAY,
+  },
+  {
+    id: "g_5",
+    userId: "u_mj",
+    court: "Downtown Pickleball Center",
+    date: new Date(NOW + 3 * DAY).toISOString(),
+    minSkill: "Intermediate",
+    maxPlayers: 4,
+    isPrivate: false,
+    playerIds: ["u_mj", "u_jw"],
+    createdAt: NOW - DAY,
   },
 ];
 
@@ -353,6 +365,8 @@ interface AppStore extends AppState {
     notes?: string;
     isPrivate: boolean;
   }) => Game;
+  joinGame: (gameId: string) => void;
+  leaveGame: (gameId: string) => void;
   getChatWithUser: (otherUserId: string) => Chat | undefined;
   getChat: (id: string) => Chat | undefined;
   startOrGetChat: (otherUserId: string) => string;
@@ -461,6 +475,30 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     return game;
   }, []);
 
+  const joinGame = useCallback((gameId: string) => {
+    setGames((prev) =>
+      prev.map((g) => {
+        if (g.id !== gameId) return g;
+        if (g.playerIds.includes(CURRENT_USER_ID)) return g;
+        if (g.playerIds.length >= g.maxPlayers) return g;
+        return { ...g, playerIds: [...g.playerIds, CURRENT_USER_ID] };
+      })
+    );
+  }, []);
+
+  const leaveGame = useCallback((gameId: string) => {
+    setGames((prev) =>
+      prev.map((g) => {
+        if (g.id !== gameId) return g;
+        if (g.userId === CURRENT_USER_ID) return g;
+        return {
+          ...g,
+          playerIds: g.playerIds.filter((id) => id !== CURRENT_USER_ID),
+        };
+      })
+    );
+  }, []);
+
   const getChatWithUser = useCallback(
     (otherUserId: string) =>
       chats.find(
@@ -525,6 +563,8 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     addComment,
     getPost,
     createGame,
+    joinGame,
+    leaveGame,
     getChatWithUser,
     getChat,
     startOrGetChat,

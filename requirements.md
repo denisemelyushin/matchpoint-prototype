@@ -161,15 +161,23 @@ Header has a **Post** action. Post must have either text or an image to be creat
 ### 10.1 Games list
 Shows all public games (and the current user's private games). Each **game card** shows:
 - Host: name, avatar.
-- **Court** (e.g. "Riverside Courts").
-- **Date and time** formatted in a human-friendly way.
-- **Minimum skill level**.
-- **Max players** and current number of players joined.
-- **Notes** (optional).
 - A small indicator for private games (lock icon).
 - A pill showing spots remaining or "Full".
+- Main info block (all in the same section, one per line):
+  - **Court** (e.g. "Riverside Courts").
+  - **Date and time** formatted in a human-friendly way.
+  - **Minimum skill level**.
+  - **Max players** and current number of players joined.
+  - **Notes** (optional).
 
-### 10.2 Create game (`/game/new`)
+### 10.2 Join button
+Every game card shows a single primary action button whose state depends on the current user:
+- **Join game** — shown when there are free slots and the user has not joined. Tapping it adds the user to the game.
+- **Joined** — shown when the user is already a participant (and is not the host). Tapping confirms and lets the user leave the game.
+- **Game full** — shown as a disabled state when all slots are occupied and the user has not joined.
+- **You're hosting** — shown as a disabled state when the current user is the host of the game.
+
+### 10.3 Create game (`/game/new`)
 Opened from the Games FAB. Fields:
 - **Court** — dropdown of preset courts, with a "+ Add custom court" option that reveals a free-text input.
 - **Date & time** (native datetime picker).
