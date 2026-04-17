@@ -107,6 +107,18 @@ import { REFERENCE_NOW as NOW } from "./time";
 
 const INITIAL_POSTS: Post[] = [
   {
+    id: "p_private_me",
+    userId: CURRENT_USER_ID,
+    content:
+      "Logging tonight's drills so only my close crew sees it — worked on third shot drops and dinks. Feeling sharper already.",
+    location: "Community Sports Complex",
+    isPrivate: true,
+    likes: 3,
+    liked: false,
+    comments: [],
+    createdAt: NOW - 5 * MINUTE,
+  },
+  {
     id: "p_1",
     userId: "u_sc",
     content:

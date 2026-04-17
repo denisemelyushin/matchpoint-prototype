@@ -40,12 +40,9 @@ export function PostCard({ post }: PostCardProps) {
       <div className="flex items-center gap-3 mb-3">
         <Avatar name={author.name} initials={author.initials} size={42} />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <p className="font-semibold text-foreground text-[15px] leading-tight truncate">
-              {author.name}
-            </p>
-            {post.isPrivate && <LockIcon size={12} color="var(--color-muted)" />}
-          </div>
+          <p className="font-semibold text-foreground text-[15px] leading-tight truncate">
+            {author.name}
+          </p>
           <div className="flex items-center gap-1.5 mt-0.5">
             <span className="text-muted text-xs">
               {formatRelative(post.createdAt)}
@@ -61,6 +58,15 @@ export function PostCard({ post }: PostCardProps) {
             )}
           </div>
         </div>
+        {post.isPrivate && (
+          <span
+            className="shrink-0 inline-flex items-center text-muted"
+            aria-label="Private post"
+            title="Private post"
+          >
+            <LockIcon size={11} color="var(--color-muted)" />
+          </span>
+        )}
       </div>
 
       {post.content && (

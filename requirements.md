@@ -151,7 +151,7 @@ Shows user posts in chronological order (newest first). Each **post** card shows
 - **Likes** count with a heart toggle
 - **Comments** count
 
-Private posts (visible only to the author) show a small lock icon next to the name.
+Private posts (visible only to the author and their friends) show a small muted lock icon in the top-right corner of the post header, both in the feed list and on the post detail screen.
 
 ### 9.2 Like / Unlike
 - Tapping the heart toggles the like state and updates the count live.
@@ -241,9 +241,9 @@ Opened from the top-right **Add** button on the Chats tab. Shows:
 
 ## 13. Privacy & Visibility
 
-- **Posts** can be marked Public or Private. Private posts are visible only to their author.
+- **Posts** can be marked Public or Private. Public posts are visible to everyone on the MatchPoint app; private posts are scoped to the author's friends.
 - **Games** can be marked Public or Private. Private games are visible only to their host.
-- Private items display a small lock icon in their card.
+- Private posts display a small muted lock icon in the top-right of the post header, on both the feed card and the post detail screen. Private games display a small lock icon in their game card.
 
 ---
 
