@@ -101,7 +101,7 @@ export default function ChatDetailPage({
             className="p-1.5 rounded-full active:scale-90 transition-transform disabled:opacity-40"
             aria-label="Send"
           >
-            <SendIcon size={18} color={draft.trim() ? "#96FE17" : "#888"} />
+            <SendIcon size={18} color={draft.trim() ? "var(--color-primary)" : "var(--color-muted)"} />
           </button>
         </div>
       </div>

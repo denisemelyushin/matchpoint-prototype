@@ -98,7 +98,7 @@ export default function EditProfilePage() {
               />
             )}
             <div className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center border-2 border-background">
-              <EditIcon size={14} color="#0A0A0A" />
+              <EditIcon size={14} color="var(--app-primary-on)" />
             </div>
           </button>
           <input

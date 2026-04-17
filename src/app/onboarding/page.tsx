@@ -165,7 +165,7 @@ export default function OnboardingPage() {
                 style={{ width: frameWidth || undefined }}
               >
                 <div className="w-28 h-28 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-                  <Icon size={56} color="#96FE17" />
+                  <Icon size={56} color="var(--color-primary)" />
                 </div>
                 <h2 className="text-2xl font-bold text-foreground text-center leading-tight mb-3">
                   {s.title}
@@ -200,7 +200,7 @@ export default function OnboardingPage() {
 
         <button
           onClick={handleNext}
-          className="w-full max-w-[320px] mx-auto block py-4 rounded-2xl bg-primary text-background font-semibold text-lg active:scale-[0.97] transition-transform"
+          className="w-full max-w-[320px] mx-auto block py-4 rounded-2xl bg-primary text-[var(--app-primary-on)] font-semibold text-lg active:scale-[0.97] transition-transform"
         >
           {isLast ? "Let's Go!" : "Next"}
         </button>

@@ -105,7 +105,7 @@ export default function CreatePostPage() {
           onClick={() => fileInputRef.current?.click()}
           className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface border border-border active:scale-[0.98] transition-transform"
         >
-          <ImageIcon size={18} color="#96FE17" />
+          <ImageIcon size={18} color="var(--color-primary)" />
           <span className="text-foreground text-sm font-medium">
             {imageDataUrl ? "Change image" : "Add image"}
           </span>

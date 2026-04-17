@@ -1,16 +1,120 @@
 @import "tailwindcss";
 
-@theme inline {
-  --color-background: #0A0A0A;
-  --color-foreground: #EDEDED;
-  --color-primary: #96FE17;
-  --color-primary-dark: #7AD612;
-  --color-surface: #1A1A1A;
-  --color-surface-light: #252525;
-  --color-muted: #888888;
-  --color-border: #2A2A2A;
+/*
+ * Color tokens consumed by Tailwind utilities (bg-background, text-foreground,
+ * bg-primary, etc.). These indirect through the per-theme --app-* variables
+ * defined below, so switching [data-theme] on <html> reskins the whole app.
+ */
+@theme {
+  --color-background: var(--app-bg);
+  --color-foreground: var(--app-fg);
+  --color-primary: var(--app-primary);
+  --color-primary-dark: var(--app-primary-dark);
+  --color-surface: var(--app-surface);
+  --color-surface-light: var(--app-surface-light);
+  --color-muted: var(--app-muted);
+  --color-border: var(--app-border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+/* ----- Dark · Midnight Lime (default) -------------------------------- */
+:root,
+:root[data-theme="dark-lime"] {
+  --app-bg: #0A0A0A;
+  --app-fg: #EDEDED;
+  --app-primary: #96FE17;
+  --app-primary-dark: #7AD612;
+  --app-primary-on: #0A0A0A;
+  --app-surface: #1A1A1A;
+  --app-surface-light: #252525;
+  --app-muted: #888888;
+  --app-border: #2A2A2A;
+  color-scheme: dark;
+}
+
+/* ----- Dark · Court Blue -------------------------------------------- */
+:root[data-theme="dark-blue"] {
+  --app-bg: #0A1020;
+  --app-fg: #E7EEF9;
+  --app-primary: #60A5FA;
+  --app-primary-dark: #2563EB;
+  --app-primary-on: #08102A;
+  --app-surface: #141B2E;
+  --app-surface-light: #1E2744;
+  --app-muted: #7C8CA8;
+  --app-border: #253049;
+  color-scheme: dark;
+}
+
+/* ----- Dark · Ember (sunset court) ---------------------------------- */
+:root[data-theme="dark-ember"] {
+  --app-bg: #140D08;
+  --app-fg: #F4EBE2;
+  --app-primary: #FB923C;
+  --app-primary-dark: #EA580C;
+  --app-primary-on: #1B0F06;
+  --app-surface: #1E1711;
+  --app-surface-light: #2A221B;
+  --app-muted: #8E8072;
+  --app-border: #332A22;
+  color-scheme: dark;
+}
+
+/* ----- Dark · Violet Rally ------------------------------------------ */
+:root[data-theme="dark-violet"] {
+  --app-bg: #100B1C;
+  --app-fg: #EDE6F7;
+  --app-primary: #E879F9;
+  --app-primary-dark: #C026D3;
+  --app-primary-on: #1A0F27;
+  --app-surface: #1A142A;
+  --app-surface-light: #261D3E;
+  --app-muted: #8E82A6;
+  --app-border: #2E2748;
+  color-scheme: dark;
+}
+
+/* ----- Light · Daylight (clean + forest green) ---------------------- */
+:root[data-theme="light-daylight"] {
+  --app-bg: #FFFFFF;
+  --app-fg: #0F172A;
+  --app-primary: #16A34A;
+  --app-primary-dark: #15803D;
+  --app-primary-on: #FFFFFF;
+  --app-surface: #F4F6FA;
+  --app-surface-light: #E9EDF3;
+  --app-muted: #64748B;
+  --app-border: #DCE1E8;
+  color-scheme: light;
+}
+
+/* ----- Light · Paper (cream + navy) --------------------------------- */
+:root[data-theme="light-paper"] {
+  --app-bg: #FAF7F2;
+  --app-fg: #1F2937;
+  --app-primary: #1D4ED8;
+  --app-primary-dark: #1E40AF;
+  --app-primary-on: #FFFFFF;
+  --app-surface: #F2EEE6;
+  --app-surface-light: #EAE4D8;
+  --app-muted: #8C8678;
+  --app-border: #D8D1C1;
+  color-scheme: light;
+}
+
+/* ----- Light · Coral (peach + terracotta) --------------------------- */
+:root[data-theme="light-coral"] {
+  --app-bg: #FFF6F0;
+  --app-fg: #3F1D07;
+  --app-primary: #EA580C;
+  --app-primary-dark: #C2410C;
+  --app-primary-on: #FFFFFF;
+  --app-surface: #FDEBDF;
+  --app-surface-light: #F7D9C5;
+  --app-muted: #8C6A55;
+  --app-border: #EFC3A6;
+  color-scheme: light;
 }
 
 * {
@@ -18,15 +122,15 @@
 }
 
 html {
-  background: #0A0A0A;
+  background: var(--app-bg);
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
 }
 
 body {
-  background: #0A0A0A;
-  color: #EDEDED;
+  background: var(--app-bg);
+  color: var(--app-fg);
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
@@ -43,4 +147,15 @@ input, textarea, select {
 
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@keyframes expanding-pill-label-in {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }

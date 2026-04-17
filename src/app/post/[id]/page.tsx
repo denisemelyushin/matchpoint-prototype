@@ -61,7 +61,7 @@ export default function PostDetailPage({
                 <p className="font-semibold text-foreground text-[15px] truncate">
                   {author.name}
                 </p>
-                {post.isPrivate && <LockIcon size={12} color="#888" />}
+                {post.isPrivate && <LockIcon size={12} color="var(--color-muted)" />}
               </div>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="text-muted text-xs">
@@ -71,7 +71,7 @@ export default function PostDetailPage({
                   <>
                     <span className="text-muted text-xs">·</span>
                     <span className="text-muted text-xs flex items-center gap-0.5">
-                      <MapPinIcon size={10} color="#888" />
+                      <MapPinIcon size={10} color="var(--color-muted)" />
                       {post.location}
                     </span>
                   </>
@@ -102,19 +102,13 @@ export default function PostDetailPage({
             >
               <HeartIcon
                 size={20}
-                color={post.liked ? "#FF4757" : "#888"}
+                color={post.liked ? "#F87171" : "var(--color-muted)"}
                 filled={post.liked}
               />
-              <span
-                className={`text-sm ${
-                  post.liked ? "text-[#FF4757]" : "text-muted"
-                }`}
-              >
-                {post.likes}
-              </span>
+              <span className="text-sm text-muted">{post.likes}</span>
             </button>
             <div className="flex items-center gap-1.5">
-              <MessageIcon size={20} color="#888" />
+              <MessageIcon size={20} color="var(--color-muted)" />
               <span className="text-sm text-muted">
                 {post.comments.length}
               </span>
@@ -192,7 +186,7 @@ export default function PostDetailPage({
             >
               <SendIcon
                 size={18}
-                color={draft.trim() ? "#96FE17" : "#888"}
+                color={draft.trim() ? "var(--color-primary)" : "var(--color-muted)"}
               />
             </button>
           </div>

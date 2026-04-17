@@ -28,7 +28,7 @@ export function AppHeader({ title, right, onBack }: AppHeaderProps) {
         className="p-2 active:scale-90 transition-transform"
         aria-label="Back"
       >
-        <ChevronLeftIcon size={24} color="#EDEDED" />
+        <ChevronLeftIcon size={24} color="var(--color-foreground)" />
       </button>
 
       <h1 className="flex-1 text-center text-lg font-bold text-foreground truncate px-2">

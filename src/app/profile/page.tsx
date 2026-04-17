@@ -30,7 +30,7 @@ export default function ProfilePage() {
           <p className="text-muted text-sm mt-1">{currentUser.email}</p>
 
           <div className="mt-3 flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 rounded-full">
-            <TrophyIcon size={14} color="#96FE17" />
+            <TrophyIcon size={14} color="var(--color-primary)" />
             <span className="text-xs font-semibold uppercase tracking-wider">
               {currentUser.skillLevel}
             </span>
@@ -46,7 +46,7 @@ export default function ProfilePage() {
             onClick={() => router.push("/profile/edit")}
             className="mt-6 flex items-center gap-2 px-5 py-2.5 rounded-full bg-surface border border-border active:scale-95 transition-transform"
           >
-            <EditIcon size={14} color="#EDEDED" />
+            <EditIcon size={14} color="var(--color-foreground)" />
             <span className="text-foreground text-sm font-medium">
               Edit Profile
             </span>

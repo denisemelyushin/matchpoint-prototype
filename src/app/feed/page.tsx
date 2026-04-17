@@ -102,7 +102,7 @@ export default function FeedPage() {
           className="p-2 -ml-2 active:scale-90 transition-transform"
           aria-label="Open menu"
         >
-          <MenuIcon size={24} color="#EDEDED" />
+          <MenuIcon size={24} color="var(--color-foreground)" />
         </button>
 
         <h1 className="text-lg font-bold text-foreground">
@@ -115,7 +115,7 @@ export default function FeedPage() {
             className="p-2 -mr-2 active:scale-90 transition-transform"
             aria-label={`Create new ${activeTab === "chats" ? "chat" : activeTab.slice(0, -1)}`}
           >
-            <PlusIcon size={24} color="#EDEDED" />
+            <PlusIcon size={24} color="var(--color-foreground)" />
           </button>
         ) : (
           <div className="w-10 h-10 -mr-2" aria-hidden />
@@ -191,7 +191,7 @@ function EmptyState({ text }: { text: string }) {
   return (
     <div className="py-16 flex flex-col items-center gap-3 text-center px-6">
       <div className="w-14 h-14 rounded-full bg-surface-light flex items-center justify-center">
-        <PlusIcon size={22} color="#888" />
+        <PlusIcon size={22} color="var(--color-muted)" />
       </div>
       <p className="text-muted text-sm">{text}</p>
     </div>

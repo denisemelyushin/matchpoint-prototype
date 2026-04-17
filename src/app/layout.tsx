@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import { AppStoreProvider } from "@/lib/app-store";
 import { TabBarVariantProvider } from "@/lib/tab-bar-variant";
+import { ThemeProvider, THEME_INIT_SCRIPT } from "@/lib/theme";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,12 +35,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} h-full`}>
+    <html
+      lang="en"
+      className={`${geistSans.variable} h-full`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script
+          // Applies the saved theme to <html data-theme="…"> before React
+          // hydrates so we don't briefly flash the default dark theme on
+          // reloads for users who picked a light theme.
+          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
+        />
+      </head>
       <body className="h-full overflow-hidden flex justify-center bg-background">
         <div className="relative w-full h-full max-w-[480px] overflow-hidden">
-          <AppStoreProvider>
-            <TabBarVariantProvider>{children}</TabBarVariantProvider>
-          </AppStoreProvider>
+          <ThemeProvider>
+            <AppStoreProvider>
+              <TabBarVariantProvider>{children}</TabBarVariantProvider>
+            </AppStoreProvider>
+          </ThemeProvider>
         </div>
       </body>
     </html>

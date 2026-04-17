@@ -28,10 +28,10 @@ export function GameCard({ game }: GameCardProps) {
           <p className="font-semibold text-foreground text-[15px] leading-tight truncate">
             {host.name}
           </p>
-          {game.isPrivate && <LockIcon size={12} color="#888" />}
+          {game.isPrivate && <LockIcon size={12} color="var(--color-muted)" />}
         </div>
         {isFull ? (
-          <span className="text-xs font-medium text-muted bg-white/5 px-2.5 py-1 rounded-full">
+          <span className="text-xs font-medium text-muted bg-foreground/5 px-2.5 py-1 rounded-full">
             Full
           </span>
         ) : (
@@ -46,16 +46,16 @@ export function GameCard({ game }: GameCardProps) {
           {formatDateTime(game.date)}
         </p>
         <div className="flex items-center gap-1.5 mt-1">
-          <MapPinIcon size={13} color="#888" />
+          <MapPinIcon size={13} color="var(--color-muted)" />
           <span className="text-muted text-[13px]">{game.court}</span>
         </div>
       </div>
 
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-[11px] font-medium uppercase tracking-wider text-muted bg-white/5 px-2 py-1 rounded-md">
+        <span className="text-[11px] font-medium uppercase tracking-wider text-muted bg-foreground/5 px-2 py-1 rounded-md">
           {game.minSkill}+
         </span>
-        <span className="text-[11px] font-medium uppercase tracking-wider text-muted bg-white/5 px-2 py-1 rounded-md">
+        <span className="text-[11px] font-medium uppercase tracking-wider text-muted bg-foreground/5 px-2 py-1 rounded-md">
           {game.playerIds.length}/{game.maxPlayers} players
         </span>
       </div>
@@ -98,9 +98,9 @@ function GameActionButton({
     return (
       <button
         disabled
-        className="w-full py-2.5 rounded-xl bg-white/5 text-muted text-sm font-semibold cursor-default flex items-center justify-center gap-2"
+        className="w-full py-2.5 rounded-xl bg-foreground/5 text-muted text-sm font-semibold cursor-default flex items-center justify-center gap-2"
       >
-        <CheckIcon size={16} color="#888" />
+        <CheckIcon size={16} color="var(--color-muted)" />
         You&apos;re hosting
       </button>
     );
@@ -115,7 +115,7 @@ function GameActionButton({
         onClick={handleLeave}
         className="w-full py-2.5 rounded-xl border border-primary/40 bg-primary/10 text-primary text-sm font-semibold active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
       >
-        <CheckIcon size={16} color="#96FE17" />
+        <CheckIcon size={16} color="var(--color-primary)" />
         Joined
       </button>
     );
@@ -125,7 +125,7 @@ function GameActionButton({
     return (
       <button
         disabled
-        className="w-full py-2.5 rounded-xl bg-white/5 text-muted text-sm font-semibold cursor-not-allowed"
+        className="w-full py-2.5 rounded-xl bg-foreground/5 text-muted text-sm font-semibold cursor-not-allowed"
       >
         Game full
       </button>
@@ -135,7 +135,7 @@ function GameActionButton({
   return (
     <button
       onClick={onJoin}
-      className="w-full py-2.5 rounded-xl bg-primary text-background text-sm font-semibold active:scale-[0.98] transition-transform"
+      className="w-full py-2.5 rounded-xl bg-primary text-[var(--app-primary-on)] text-sm font-semibold active:scale-[0.98] transition-transform"
     >
       Join game
     </button>

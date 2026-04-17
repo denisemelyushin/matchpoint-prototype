@@ -44,7 +44,7 @@ export function PostCard({ post }: PostCardProps) {
             <p className="font-semibold text-foreground text-[15px] leading-tight truncate">
               {author.name}
             </p>
-            {post.isPrivate && <LockIcon size={12} color="#888" />}
+            {post.isPrivate && <LockIcon size={12} color="var(--color-muted)" />}
           </div>
           <div className="flex items-center gap-1.5 mt-0.5">
             <span className="text-muted text-xs">
@@ -54,7 +54,7 @@ export function PostCard({ post }: PostCardProps) {
               <>
                 <span className="text-muted text-xs">·</span>
                 <span className="text-muted text-xs flex items-center gap-0.5 truncate">
-                  <MapPinIcon size={10} color="#888" />
+                  <MapPinIcon size={10} color="var(--color-muted)" />
                   {post.location}
                 </span>
               </>
@@ -81,11 +81,11 @@ export function PostCard({ post }: PostCardProps) {
       <div className="flex items-center gap-5 -mb-1">
         <button
           onClick={handleLike}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 -ml-2.5 rounded-full active:bg-white/5 active:scale-95 transition-all"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 -ml-2.5 rounded-full active:bg-foreground/5 active:scale-95 transition-all"
         >
           <HeartIcon
             size={18}
-            color={post.liked ? "#F87171" : "#888"}
+            color={post.liked ? "#F87171" : "var(--color-muted)"}
             filled={post.liked}
           />
           <span className="text-[13px] font-medium text-muted">
@@ -98,9 +98,9 @@ export function PostCard({ post }: PostCardProps) {
             e.stopPropagation();
             handleCommentsClick();
           }}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full active:bg-white/5 active:scale-95 transition-all"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full active:bg-foreground/5 active:scale-95 transition-all"
         >
-          <MessageIcon size={18} color="#888" />
+          <MessageIcon size={18} color="var(--color-muted)" />
           <span className="text-[13px] font-medium text-muted">
             {post.comments.length}
           </span>

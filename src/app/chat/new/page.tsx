@@ -37,7 +37,7 @@ export default function NewChatPage() {
 
       <div className="px-4 pt-4 pb-2">
         <div className="flex items-center gap-2 bg-surface border border-border rounded-xl px-3 py-2.5">
-          <SearchIcon size={18} color="#888" />
+          <SearchIcon size={18} color="var(--color-muted)" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -65,7 +65,7 @@ export default function NewChatPage() {
                   <p className="font-semibold text-foreground text-[15px] truncate">
                     {u.name}
                   </p>
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-muted bg-white/5 px-1.5 py-0.5 rounded">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-muted bg-foreground/5 px-1.5 py-0.5 rounded">
                     {u.skillLevel}
                   </span>
                 </div>

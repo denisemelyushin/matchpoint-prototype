@@ -67,7 +67,7 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
             className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-primary/10 text-primary font-medium text-[13px] active:scale-[0.98] transition-transform"
             tabIndex={isOpen ? 0 : -1}
           >
-            <EditIcon size={14} color="#96FE17" />
+            <EditIcon size={14} color="var(--color-primary)" />
             Edit Profile
           </button>
         </div>
@@ -76,10 +76,10 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
       <div className="flex-1 px-3 pt-3">
         <button
           onClick={() => go("/settings")}
-          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-white/5 transition-colors"
+          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-foreground/5 transition-colors"
           tabIndex={isOpen ? 0 : -1}
         >
-          <SlidersIcon size={18} color="#888" />
+          <SlidersIcon size={18} color="var(--color-muted)" />
           <span className="flex-1 text-foreground text-[14px] text-left">
             Settings
           </span>
@@ -87,10 +87,10 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
 
         <button
           onClick={() => go("/privacy")}
-          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-white/5 transition-colors"
+          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-foreground/5 transition-colors"
           tabIndex={isOpen ? 0 : -1}
         >
-          <ShieldIcon size={18} color="#888" />
+          <ShieldIcon size={18} color="var(--color-muted)" />
           <span className="flex-1 text-foreground text-[14px] text-left">
             Privacy Policy
           </span>
@@ -98,10 +98,10 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
 
         <button
           onClick={() => go("/terms")}
-          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-white/5 transition-colors"
+          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-foreground/5 transition-colors"
           tabIndex={isOpen ? 0 : -1}
         >
-          <FileTextIcon size={18} color="#888" />
+          <FileTextIcon size={18} color="var(--color-muted)" />
           <span className="flex-1 text-foreground text-[14px] text-left">
             Terms of Use
           </span>
@@ -111,10 +111,10 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
       <div className="p-3 pb-6">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-white/5 transition-colors"
+          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-foreground/5 transition-colors"
           tabIndex={isOpen ? 0 : -1}
         >
-          <LogOutIcon size={18} color="#888" />
+          <LogOutIcon size={18} color="var(--color-muted)" />
           <span className="text-foreground text-[14px]">Log Out</span>
         </button>
       </div>

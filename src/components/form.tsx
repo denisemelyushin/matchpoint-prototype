@@ -65,7 +65,7 @@ export function Select(
         height={14}
         viewBox="0 0 24 24"
         fill="none"
-        stroke="#888"
+        stroke="var(--color-muted)"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -89,13 +89,13 @@ export function PrivacyToggle({ isPrivate, onChange }: PrivacyToggleProps) {
         onClick={() => onChange(false)}
         className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-colors ${
           !isPrivate
-            ? "bg-primary text-background"
+            ? "bg-primary text-[var(--app-primary-on)]"
             : "text-muted hover:text-foreground"
         }`}
       >
         <GlobeIcon
           size={16}
-          color={!isPrivate ? "#0A0A0A" : "#888"}
+          color={!isPrivate ? "var(--app-primary-on)" : "var(--color-muted)"}
         />
         Public
       </button>
@@ -104,11 +104,11 @@ export function PrivacyToggle({ isPrivate, onChange }: PrivacyToggleProps) {
         onClick={() => onChange(true)}
         className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-colors ${
           isPrivate
-            ? "bg-primary text-background"
+            ? "bg-primary text-[var(--app-primary-on)]"
             : "text-muted hover:text-foreground"
         }`}
       >
-        <LockIcon size={16} color={isPrivate ? "#0A0A0A" : "#888"} />
+        <LockIcon size={16} color={isPrivate ? "var(--app-primary-on)" : "var(--color-muted)"} />
         Private
       </button>
     </div>

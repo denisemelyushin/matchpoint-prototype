@@ -263,12 +263,16 @@ Opened from the top-right **Add** button on the Chats tab. Shows:
 
 Reached from the **Settings** entry in the slide menu. Regular sub-page layout (back-arrow header, no bottom tab bar), so the user returns to whichever tab they were on previously.
 
-Sections:
+Sections, in order:
 
+- **App theme** — a picker of seven named colour themes tuned for the product (sport/social): four dark (`Midnight Lime` — default; `Court Blue`; `Ember`; `Violet Rally`) and three light (`Daylight`; `Paper`; `Coral`). Each option is rendered as a swatch tile showing the theme's background, surface, and primary accent; the active theme gets a primary-coloured ring and check badge. Selecting a theme:
+  - Instantly re-skins the entire app by swapping a set of CSS custom properties (`--app-bg`, `--app-fg`, `--app-primary`, `--app-surface`, `--app-border`, `--app-muted`, …) via `[data-theme="…"]` on `<html>`.
+  - Persists the choice in `localStorage` under `matchpoint:theme` and is applied before hydration by a small inline script in the document head, so light-theme users don't get a dark-theme flash on reload.
+  - Updates the mobile browser chrome colour (`<meta name="theme-color">`) to match.
 - **Tab bar style** — radio-style list of the four visual variants available for the bottom tab bar (Floating dock, Sliding pill, Expanding pill, Indicator line). Selecting an option:
   - Instantly re-skins the bottom tab bar across the app.
   - Persists the choice in `localStorage` under `matchpoint:tab-bar-variant` so it survives reloads.
   - Marks the selected row with a filled primary-coloured check indicator; others show a neutral outlined circle.
 - **Preview** — a demo tab bar rendered inline below the variant list, framed inside a rounded card with a subtle border. It uses the same four tabs (Feed, Games, Players, Chats) and adopts whichever variant is currently selected, so changes in the list re-skin the preview immediately. Tapping a tab in the preview only updates its local active state — it does **not** navigate anywhere, so users can explore the active/inactive transitions of each style without leaving the Settings screen.
 
-The screen is a container for future account/app preferences; only the tab bar style section and its preview ship today.
+The screen is a container for future account/app preferences; the app theme picker, tab bar style section, and its preview ship today.

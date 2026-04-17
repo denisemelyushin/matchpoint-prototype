@@ -58,7 +58,7 @@ function FloatingDock({ activeTab, onTabChange }: BottomTabsProps) {
               aria-label={tab.label}
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon size={18} color={isActive ? "#96FE17" : "#888"} />
+              <Icon size={18} color={isActive ? "var(--color-primary)" : "var(--color-muted)"} />
               <span
                 className={`text-[9px] font-semibold tracking-wide ${
                   isActive ? "text-primary" : "text-muted"
@@ -100,7 +100,7 @@ function SlidingPill({ activeTab, onTabChange }: BottomTabsProps) {
               aria-label={tab.label}
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon size={20} color={isActive ? "#96FE17" : "#888"} />
+              <Icon size={20} color={isActive ? "var(--color-primary)" : "var(--color-muted)"} />
               <span
                 className={`text-[10px] tracking-wide transition-colors ${
                   isActive
@@ -136,7 +136,7 @@ function ExpandingPill({ activeTab, onTabChange }: BottomTabsProps) {
               aria-label={tab.label}
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon size={20} color={isActive ? "#96FE17" : "#888"} />
+              <Icon size={20} color={isActive ? "var(--color-primary)" : "var(--color-muted)"} />
               <span
                 className={`text-[13px] font-semibold text-primary whitespace-nowrap overflow-hidden transition-all duration-300 ease-out ${
                   isActive ? "max-w-[90px] opacity-100" : "max-w-0 opacity-0"
@@ -168,7 +168,7 @@ function IndicatorLine({ activeTab, onTabChange }: BottomTabsProps) {
               aria-label={tab.label}
               aria-current={isActive ? "page" : undefined}
             >
-              <Icon size={20} color={isActive ? "#EDEDED" : "#888"} />
+              <Icon size={20} color={isActive ? "var(--color-foreground)" : "var(--color-muted)"} />
               <span
                 className={`text-[10px] tracking-wide transition-colors ${
                   isActive

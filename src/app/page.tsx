@@ -28,7 +28,7 @@ export default function WelcomePage() {
 
       <button
         onClick={() => router.push("/onboarding")}
-        className="w-full max-w-[320px] py-4 rounded-2xl bg-primary text-background font-semibold text-lg active:scale-[0.97] transition-transform"
+        className="w-full max-w-[320px] py-4 rounded-2xl bg-primary text-[var(--app-primary-on)] font-semibold text-lg active:scale-[0.97] transition-transform"
       >
         Get Started
       </button>

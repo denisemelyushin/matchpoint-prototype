@@ -28,7 +28,7 @@ export function PlayerCard({ player }: PlayerCardProps) {
           <p className="font-semibold text-foreground text-[15px] truncate">
             {player.name}
           </p>
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted bg-white/5 px-1.5 py-0.5 rounded">
+          <span className="text-[10px] font-medium uppercase tracking-wider text-muted bg-foreground/5 px-1.5 py-0.5 rounded">
             {player.skillLevel}
           </span>
         </div>
@@ -41,7 +41,7 @@ export function PlayerCard({ player }: PlayerCardProps) {
         className="p-2 rounded-full bg-primary/10 active:scale-90 transition-transform shrink-0"
         aria-label={`Message ${player.name}`}
       >
-        <MessageCircleIcon size={18} color="#96FE17" />
+        <MessageCircleIcon size={18} color="var(--color-primary)" />
       </button>
     </div>
   );
