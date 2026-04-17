@@ -175,7 +175,15 @@ Header has a **Post** action. Post must have either text or an image to be creat
 ## 10. Games (second tab)
 
 ### 10.1 Games list
-Shows all public games (and the current user's private games). Each **game card** shows:
+Shows public games (and the current user's private games) filtered by a segmented time toggle at the top of the tab. The toggle has four chips, laid out as equal-width pills in a rounded container:
+- **Upcoming** (default) — all games dated today or later.
+- **Today** — games whose date falls on the current day.
+- **Tomorrow** — games whose date falls on the next day.
+- **Weekend** — games whose date falls on the upcoming Saturday and/or Sunday. If today is Saturday, both Saturday and Sunday are included; if today is Sunday, only Sunday is included; otherwise the next Sat–Sun are included.
+
+Within every filter the games are sorted by **date ascending** (soonest first). Each filter shows a contextual empty state when no games match.
+
+Each **game card** shows:
 - Host: name, avatar.
 - A small indicator for private games (lock icon).
 - A pill showing spots remaining or "Full".
@@ -207,13 +215,19 @@ Header has a **Create** action. The host is automatically added as the first pla
 
 ## 11. Players (third tab)
 
-- Lists all users other than the current user.
+- Lists users other than the current user, sorted alphabetically (A→Z) by name using locale-aware, case-insensitive comparison.
+- At the top of the tab content, a pill **segmented toggle** switches between two filters:
+  - **All players** (default) — every other user in the directory.
+  - **My friends** — only users the current user has added as a friend.
+  The selected option is filled with the primary colour; the other is plain muted text on a subtle pill background. The list re-renders instantly when the filter changes, preserving A→Z order. If the resulting list is empty, an inline empty state is shown (e.g. "No friends yet. Add players from All players." for the friends filter).
 - Each player card shows:
   - Avatar
   - Name
-  - Skill level badge
+  - Skill level badge (rendered on its own line directly below the name)
   - Bio (truncated)
-  - A **message** shortcut button (primary color) that opens — or creates — a chat with that player.
+  - A **friend toggle** button on the right. When the user is not yet a friend, the button shows a muted outline "user with +" icon on a subtle neutral background; tapping adds them as a friend immediately. When they are already a friend, the button flips to a primary-tinted "user with check" icon; tapping it opens an in-app **confirmation dialog** ("Remove {name} from friends?", explanatory body, destructive Remove button, Cancel button, dismissable via backdrop or Escape) before the friend is removed. Tapping never navigates.
+  - A **message** shortcut button (primary-tinted) next to the friend toggle that opens — or creates — a chat with that player.
+- Friend relationships live in the app store under `friendIds: string[]` (a list of user IDs the current user has befriended). Helpers `isFriend(userId)` and `toggleFriend(userId)` back the player card button and the friends filter.
 
 ## 12. Chats (fourth tab)
 
@@ -225,9 +239,18 @@ Shows all existing conversations for the current user, sorted by most recent mes
 
 ### 12.2 Chat detail (`/chat/[id]`)
 Full conversation view:
-- Header with the other user's name and avatar and a back button.
+- Header with the other user's name and avatar and a back button. The back button always returns to the **Chats** tab of the main app (`/feed?tab=chats`) regardless of how the user arrived — it does not fall back to arbitrary browser history.
 - Scrollable message list, auto-scrolling to the latest message.
 - Message bubbles styled differently for mine (right, primary color) and theirs (left, surface color).
+- **Bubble grouping**: consecutive messages from the same sender on the same day are stacked tightly (small top margin) and their connecting corner is flattened — the top-right for own messages, the top-left for received messages — mirroring the existing "tail" on the bottom corner so grouped bubbles read as a single stack. Outer corners use a 12px (`rounded-xl`) radius while tail and stack-facing corners use a gentler 8px (`rounded-lg`) — enough to soften middle-of-group bubbles without making standalone ones feel pill-shaped. When the sender changes ("turn change"), a larger vertical gap appears and the top corners return to the full 12px radius. This matches the cadence used by WhatsApp and Telegram.
+- **Speech-bubble tail**: the last bubble of a same-sender run of *own* messages (including standalone own bubbles) renders a small curved tail extending outward from the bottom-right corner in the active primary color. The bubble's bottom-right corner is squared off (`rounded-br-none`) so the tail attaches seamlessly, making the bubble read like a call-out from the user. Intermediate bubbles in a stack never render a tail — only the final one in each group does. Received bubbles do not render a tail in this prototype.
+- **Inline timestamps** in every bubble, placed in the bottom-right of the bubble in the style of WhatsApp/Telegram. The time uses the locale's short form (e.g. `2:34 PM`), is small (10px) and muted, and reserves invisible horizontal space on the last text line so it never overlaps the message content.
+- **Day separators** between messages that fall on different days. Each separator is a centered muted pill above the first message of its day, labeled:
+  - `Today` for the current day.
+  - `Yesterday` for the previous day.
+  - The weekday name (e.g. `Monday`) for anything within the last 7 days.
+  - `April 12` / `April 12, 2024` for older messages (year appended only when it differs from the reference year).
+  - The "today" anchor used for these labels is the latest of `REFERENCE_NOW` or the most recent message in the thread, so messages authored after `REFERENCE_NOW` (e.g. newly sent ones during a demo) still read as `Today` and earlier days shift to `Yesterday` / weekday labels automatically.
 - Composer at the bottom with placeholder "Message {first name}…".
 - Enter to send.
 

@@ -11,6 +11,7 @@ import { BottomTabs, type TabId } from "@/components/BottomTabs";
 import { SlideMenu } from "@/components/SlideMenu";
 import { FeedAppBar } from "@/components/FeedAppBar";
 import { PlusIcon } from "@/components/icons";
+import { REFERENCE_NOW } from "@/lib/time";
 
 const TITLES: Record<TabId, string> = {
   feed: "Feed",
@@ -19,24 +20,110 @@ const TITLES: Record<TabId, string> = {
   chats: "Chats",
 };
 
+type PlayersFilter = "all" | "friends";
+type GamesFilter = "upcoming" | "today" | "tomorrow" | "weekend";
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function computeGameRanges(now: number) {
+  const d = new Date(now);
+  const startOfToday = new Date(
+    d.getFullYear(),
+    d.getMonth(),
+    d.getDate()
+  ).getTime();
+  const startOfTomorrow = startOfToday + DAY_MS;
+  const endOfTomorrow = startOfTomorrow + DAY_MS;
+
+  // 0 = Sunday, 6 = Saturday
+  const dayOfWeek = d.getDay();
+  let weekendStart: number;
+  let weekendEnd: number;
+  if (dayOfWeek === 6) {
+    weekendStart = startOfToday;
+    weekendEnd = startOfToday + 2 * DAY_MS;
+  } else if (dayOfWeek === 0) {
+    weekendStart = startOfToday;
+    weekendEnd = startOfToday + DAY_MS;
+  } else {
+    const daysUntilSat = 6 - dayOfWeek;
+    weekendStart = startOfToday + daysUntilSat * DAY_MS;
+    weekendEnd = weekendStart + 2 * DAY_MS;
+  }
+
+  return {
+    startOfToday,
+    startOfTomorrow,
+    endOfTomorrow,
+    weekendStart,
+    weekendEnd,
+  };
+}
+
+const TAB_IDS: readonly TabId[] = ["feed", "games", "players", "chats"];
+
+function isTabId(value: string | null): value is TabId {
+  return !!value && (TAB_IDS as readonly string[]).includes(value);
+}
+
 export default function FeedPage() {
   const router = useRouter();
-  const { users, posts, games, chats, currentUserId, getUser } = useAppStore();
+  const { users, posts, games, chats, currentUserId, getUser, isFriend } =
+    useAppStore();
   const [activeTab, setActiveTab] = useState<TabId>("feed");
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Pick up ?tab=… on mount so deep links (e.g. Back from a chat) land on the
+  // right tab without a flash of the default "feed" state.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const param = new URLSearchParams(window.location.search).get("tab");
+    if (isTabId(param)) setActiveTab(param);
+  }, []);
+  const [playersFilter, setPlayersFilter] = useState<PlayersFilter>("all");
+  const [gamesFilter, setGamesFilter] = useState<GamesFilter>("upcoming");
 
   const visiblePosts = useMemo(
     () => posts.filter((p) => !p.isPrivate || p.userId === currentUserId),
     [posts, currentUserId]
   );
-  const visibleGames = useMemo(
-    () => games.filter((g) => !g.isPrivate || g.userId === currentUserId),
-    [games, currentUserId]
-  );
-  const otherPlayers = useMemo(
-    () => users.filter((u) => u.id !== currentUserId),
-    [users, currentUserId]
-  );
+  const visibleGames = useMemo(() => {
+    const {
+      startOfToday,
+      startOfTomorrow,
+      endOfTomorrow,
+      weekendStart,
+      weekendEnd,
+    } = computeGameRanges(REFERENCE_NOW);
+
+    return games
+      .filter((g) => !g.isPrivate || g.userId === currentUserId)
+      .filter((g) => {
+        const t = new Date(g.date).getTime();
+        switch (gamesFilter) {
+          case "today":
+            return t >= startOfToday && t < startOfTomorrow;
+          case "tomorrow":
+            return t >= startOfTomorrow && t < endOfTomorrow;
+          case "weekend":
+            return t >= weekendStart && t < weekendEnd;
+          case "upcoming":
+          default:
+            return t >= startOfToday;
+        }
+      })
+      .sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+  }, [games, currentUserId, gamesFilter]);
+  const otherPlayers = useMemo(() => {
+    const base = users.filter((u) => u.id !== currentUserId);
+    const filtered =
+      playersFilter === "friends" ? base.filter((u) => isFriend(u.id)) : base;
+    return [...filtered].sort((a, b) =>
+      a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
+    );
+  }, [users, currentUserId, playersFilter, isFriend]);
   const sortedChats = useMemo(() => {
     return [...chats].sort((a, b) => {
       const la = a.messages[a.messages.length - 1]?.createdAt ?? 0;
@@ -121,8 +208,9 @@ export default function FeedPage() {
 
         {activeTab === "games" && (
           <div className="px-4 py-2 pb-24">
+            <GamesFilterToggle value={gamesFilter} onChange={setGamesFilter} />
             {visibleGames.length === 0 ? (
-              <EmptyState text="No games scheduled yet. Create one!" />
+              <EmptyState text={gamesEmptyText(gamesFilter)} />
             ) : (
               visibleGames.map((game) => <GameCard key={game.id} game={game} />)
             )}
@@ -131,9 +219,21 @@ export default function FeedPage() {
 
         {activeTab === "players" && (
           <div className="px-4 py-2 pb-4">
-            {otherPlayers.map((p) => (
-              <PlayerCard key={p.id} player={p} />
-            ))}
+            <PlayersFilterToggle
+              value={playersFilter}
+              onChange={setPlayersFilter}
+            />
+            {otherPlayers.length === 0 ? (
+              <EmptyState
+                text={
+                  playersFilter === "friends"
+                    ? "No friends yet. Add players from All players."
+                    : "No players yet."
+                }
+              />
+            ) : (
+              otherPlayers.map((p) => <PlayerCard key={p.id} player={p} />)
+            )}
           </div>
         )}
 
@@ -180,4 +280,98 @@ function EmptyState({ text }: { text: string }) {
       <p className="text-muted text-sm">{text}</p>
     </div>
   );
+}
+
+function PlayersFilterToggle({
+  value,
+  onChange,
+}: {
+  value: PlayersFilter;
+  onChange: (v: PlayersFilter) => void;
+}) {
+  const options: Array<{ id: PlayersFilter; label: string }> = [
+    { id: "all", label: "All players" },
+    { id: "friends", label: "My friends" },
+  ];
+  return (
+    <div
+      role="tablist"
+      aria-label="Players filter"
+      className="flex p-1 rounded-full bg-surface-light mb-3"
+    >
+      {options.map((opt) => {
+        const selected = value === opt.id;
+        return (
+          <button
+            key={opt.id}
+            role="tab"
+            aria-selected={selected}
+            onClick={() => onChange(opt.id)}
+            className={`flex-1 text-[13px] font-medium py-1.5 rounded-full transition-colors ${
+              selected
+                ? "bg-primary text-[var(--app-primary-on)]"
+                : "text-muted"
+            }`}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function GamesFilterToggle({
+  value,
+  onChange,
+}: {
+  value: GamesFilter;
+  onChange: (v: GamesFilter) => void;
+}) {
+  const options: Array<{ id: GamesFilter; label: string }> = [
+    { id: "upcoming", label: "Upcoming" },
+    { id: "today", label: "Today" },
+    { id: "tomorrow", label: "Tomorrow" },
+    { id: "weekend", label: "Weekend" },
+  ];
+  return (
+    <div
+      role="tablist"
+      aria-label="Games filter"
+      className="flex p-1 rounded-full bg-surface-light mb-3"
+    >
+      {options.map((opt) => {
+        const selected = value === opt.id;
+        return (
+          <button
+            key={opt.id}
+            role="tab"
+            aria-selected={selected}
+            onClick={() => onChange(opt.id)}
+            className={`flex-1 text-[12px] font-medium py-1.5 rounded-full transition-colors ${
+              selected
+                ? "bg-primary text-[var(--app-primary-on)]"
+                : "text-muted"
+            }`}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function gamesEmptyText(filter: GamesFilter): string {
+  switch (filter) {
+    case "today":
+      return "No games today.";
+    case "tomorrow":
+      return "No games tomorrow.";
+    case "weekend":
+      return "No games this weekend.";
+    case "upcoming":
+    default:
+      return "No upcoming games. Create one!";
+  }
 }

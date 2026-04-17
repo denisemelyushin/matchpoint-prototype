@@ -354,12 +354,15 @@ interface AppState {
   posts: Post[];
   games: Game[];
   chats: Chat[];
+  friendIds: string[];
 }
 
 interface AppStore extends AppState {
   currentUser: User;
   getUser: (id: string) => User | undefined;
   updateProfile: (partial: Partial<Omit<User, "id" | "initials">>) => void;
+  isFriend: (userId: string) => boolean;
+  toggleFriend: (userId: string) => void;
   createPost: (input: {
     content: string;
     image?: string;
@@ -392,6 +395,25 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   const [posts, setPosts] = useState<Post[]>(INITIAL_POSTS);
   const [games, setGames] = useState<Game[]>(INITIAL_GAMES);
   const [chats, setChats] = useState<Chat[]>(INITIAL_CHATS);
+  const [friendIds, setFriendIds] = useState<string[]>([
+    "u_sc",
+    "u_mj",
+    "u_er",
+  ]);
+
+  const isFriend = useCallback(
+    (userId: string) => friendIds.includes(userId),
+    [friendIds]
+  );
+
+  const toggleFriend = useCallback((userId: string) => {
+    if (userId === CURRENT_USER_ID) return;
+    setFriendIds((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
+    );
+  }, []);
 
   const currentUser = useMemo(
     () => users.find((u) => u.id === CURRENT_USER_ID) ?? users[0],
@@ -567,9 +589,12 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     posts,
     games,
     chats,
+    friendIds,
     currentUser,
     getUser,
     updateProfile,
+    isFriend,
+    toggleFriend,
     createPost,
     toggleLike,
     addComment,

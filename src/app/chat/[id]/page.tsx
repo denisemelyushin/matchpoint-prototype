@@ -1,11 +1,14 @@
 "use client";
 
 import { use, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/app-store";
 import { AppHeader } from "@/components/AppHeader";
 import { Avatar } from "@/components/Avatar";
 import { MessageBubble } from "@/components/MessageBubble";
 import { SendIcon } from "@/components/icons";
+import { formatMessageDaySeparator, sameMessageDay } from "@/lib/format";
+import { REFERENCE_NOW } from "@/lib/time";
 
 export default function ChatDetailPage({
   params,
@@ -13,9 +16,12 @@ export default function ChatDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const router = useRouter();
   const { getChat, getUser, currentUserId, sendMessage } = useAppStore();
   const [draft, setDraft] = useState("");
   const endRef = useRef<HTMLDivElement | null>(null);
+
+  const backToChats = () => router.push("/feed?tab=chats");
 
   const chat = getChat(id);
   const otherUserId = chat?.participantIds.find((p) => p !== currentUserId);
@@ -28,7 +34,7 @@ export default function ChatDetailPage({
   if (!chat || !otherUser) {
     return (
       <div className="flex flex-col h-full bg-background">
-        <AppHeader title="Chat" />
+        <AppHeader title="Chat" onBack={backToChats} />
         <div className="flex-1 flex items-center justify-center text-muted">
           Chat not found
         </div>
@@ -47,6 +53,7 @@ export default function ChatDetailPage({
     <div className="flex flex-col h-full bg-background">
       <AppHeader
         title={otherUser.name}
+        onBack={backToChats}
         right={
           <Avatar
             name={otherUser.name}
@@ -70,13 +77,53 @@ export default function ChatDetailPage({
             </p>
           </div>
         ) : (
-          chat.messages.map((m) => (
-            <MessageBubble
-              key={m.id}
-              message={m}
-              isMine={m.senderId === currentUserId}
-            />
-          ))
+          (() => {
+            // Anchor "today" to whichever is latest: seeded REFERENCE_NOW or
+            // the freshest message. Keeps newly sent messages labeled "Today"
+            // even though they carry real-time timestamps that drift past
+            // REFERENCE_NOW.
+            const latest =
+              chat.messages[chat.messages.length - 1]?.createdAt ?? REFERENCE_NOW;
+            const effectiveNow = Math.max(REFERENCE_NOW, latest);
+            return chat.messages.map((m, i) => {
+              const prev = i > 0 ? chat.messages[i - 1] : null;
+              const next =
+                i < chat.messages.length - 1 ? chat.messages[i + 1] : null;
+              const showSeparator =
+                !prev || !sameMessageDay(prev.createdAt, m.createdAt);
+              // Tight spacing only when the previous bubble is from the same
+              // sender on the same day (no separator inserted between them).
+              const compact =
+                !showSeparator && !!prev && prev.senderId === m.senderId;
+              // Tail on the final bubble of a same-sender run (including
+              // standalone bubbles). Continues below = next message is from
+              // the same sender on the same day, so no tail there yet.
+              const continuesBelow =
+                !!next &&
+                sameMessageDay(m.createdAt, next.createdAt) &&
+                next.senderId === m.senderId;
+              const isMine = m.senderId === currentUserId;
+              const hasTail = isMine && !continuesBelow;
+              return (
+                <div key={m.id}>
+                  {showSeparator && (
+                    <DateSeparator
+                      label={formatMessageDaySeparator(
+                        m.createdAt,
+                        effectiveNow
+                      )}
+                    />
+                  )}
+                  <MessageBubble
+                    message={m}
+                    isMine={isMine}
+                    compact={compact}
+                    hasTail={hasTail}
+                  />
+                </div>
+              );
+            });
+          })()
         )}
         <div ref={endRef} />
       </div>
@@ -105,6 +152,16 @@ export default function ChatDetailPage({
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function DateSeparator({ label }: { label: string }) {
+  return (
+    <div className="flex justify-center my-3">
+      <span className="px-3 py-1 rounded-full bg-surface-light text-muted text-[11px] font-medium">
+        {label}
+      </span>
     </div>
   );
 }
