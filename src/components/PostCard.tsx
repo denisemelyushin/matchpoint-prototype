@@ -81,20 +81,14 @@ export function PostCard({ post }: PostCardProps) {
       <div className="flex items-center gap-5 -mb-1">
         <button
           onClick={handleLike}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 -ml-2.5 rounded-full active:scale-95 transition-all ${
-            post.liked ? "bg-[#FF4757]/10" : "active:bg-white/5"
-          }`}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 -ml-2.5 rounded-full active:bg-white/5 active:scale-95 transition-all"
         >
           <HeartIcon
             size={18}
-            color={post.liked ? "#FF4757" : "#888"}
+            color={post.liked ? "#F87171" : "#888"}
             filled={post.liked}
           />
-          <span
-            className={`text-[13px] font-medium ${
-              post.liked ? "text-[#FF4757]" : "text-muted"
-            }`}
-          >
+          <span className="text-[13px] font-medium text-muted">
             {post.likes}
           </span>
         </button>
