@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/app-store";
 import { PostCard } from "@/components/PostCard";
@@ -68,9 +68,41 @@ export default function FeedPage() {
 
   const showAdd = activeTab !== "players" && activeTab !== "test";
 
+  const closeMenu = () => setMenuOpen(false);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [menuOpen]);
+
   return (
-    <div className="relative flex flex-col h-full bg-background">
-      <div className="flex items-center justify-between px-4 pt-12 pb-3 bg-background/80 backdrop-blur-xl sticky top-0 z-30">
+    <div className="relative h-full w-full bg-background overflow-hidden">
+      <SlideMenu isOpen={menuOpen} onClose={closeMenu} />
+
+      <div
+        className="absolute inset-0 z-10 flex flex-col bg-background transition-transform duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] will-change-transform"
+        style={{
+          transform: menuOpen ? "translateX(280px)" : "translateX(0)",
+          boxShadow: menuOpen
+            ? "-8px 0 24px -8px rgba(0,0,0,0.6), -2px 0 6px -2px rgba(0,0,0,0.5)"
+            : "0 0 0 0 rgba(0,0,0,0)",
+        }}
+      >
+        {menuOpen && (
+          <button
+            type="button"
+            onClick={closeMenu}
+            tabIndex={-1}
+            aria-label="Close menu"
+            className="absolute inset-0 z-[60] cursor-pointer bg-transparent"
+          />
+        )}
+
+        <div className="flex items-center justify-between px-4 pt-12 pb-3 bg-background/80 backdrop-blur-xl sticky top-0 z-30">
         <button
           onClick={() => setMenuOpen(true)}
           className="p-2 -ml-2 active:scale-90 transition-transform"
@@ -155,11 +187,10 @@ export default function FeedPage() {
 
         {activeTab === "test" && <TestTab />}
 
+        </div>
+
+        <BottomTabs activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
-
-      <BottomTabs activeTab={activeTab} onTabChange={setActiveTab} />
-
-      <SlideMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
     </div>
   );
 }

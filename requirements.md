@@ -85,18 +85,26 @@ The main app has a persistent layout:
 
 ## 7. Slide Menu
 
-Opens from the left. Contains, from top to bottom:
+Uses an **underlay drawer** pattern (iOS-style side drawer): the menu and the main app shell sit on separate layers inside the 480px mobile frame. The menu is stationary, anchored to the left edge of the frame on a lower layer. The main shell sits on a higher layer and slides to the **right** by the menu's width (280px) to reveal the menu underneath.
 
-1. **Profile bar** at the top showing:
+Open / close behavior:
+
+- Open: triggered by the top-left Menu button. Over ~400ms with a smooth easing curve, the main app shell translates 280px to the right (revealing the menu beneath) and picks up a soft shadow on its left edge. Its right portion is clipped by the phone frame, leaving a narrow peek of main content. The menu itself does not animate — it is already in place underneath.
+- Close: tapping anywhere on the offset main content, or pressing **Escape**, slides the main shell back into place, hiding the menu again.
+- There is no visible scrim and no explicit close button — the offset main content itself is the tap-to-close affordance.
+
+Menu contents, from top to bottom:
+
+1. **Profile card** at the top (rounded, slightly elevated surface) showing:
    - User avatar
    - Name
    - Email
-   - Tapping the profile bar opens the Profile screen.
-2. **Edit Profile** button (primary-accented) linking to the edit profile screen.
-3. **Privacy Policy** link (opens a page).
-4. **Terms of Use** link (opens a page).
-5. **Log Out** button — returns the user to the Welcome screen.
-6. **Delete Account** button — destructive styling; confirms before returning to Welcome.
+   - Tapping the profile card opens the Profile screen.
+   - An **Edit Profile** button (primary-accented) inside the card links to the edit profile screen.
+2. **Privacy Policy** link (opens a page).
+3. **Terms of Use** link (opens a page).
+4. **Log Out** button — returns the user to the Welcome screen.
+5. **Delete Account** button — destructive styling with a tinted red background; confirms before returning to Welcome.
 
 ---
 
@@ -243,7 +251,7 @@ Opened from the top-right **Add** button on the Chats tab. Shows:
 ## 15. Non-functional Requirements
 
 - Must load instantly on mobile browsers (static where possible; Next.js App Router with RSC).
-- Must feel native: tap feedback, smooth transitions (e.g. 300ms ease-out on step change, slide menu, etc.).
+- Must feel native: tap feedback, smooth transitions (e.g. 300ms ease-out on step change, 400ms eased slide on the underlay drawer, etc.).
 - No console errors or linter warnings on build.
 - Images rendered fluidly without layout shift.
 - Responsive to orientation and small-viewport heights.
