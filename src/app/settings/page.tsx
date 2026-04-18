@@ -312,6 +312,12 @@ function AppBarVariantRow({
 function MenuProfileStyleSection() {
   const { variant, setVariant } = useMenuProfileVariant();
   const { currentUser } = useAppStore();
+  // In guest mode there's no real profile to preview, so fall back to a
+  // generic placeholder. Switching the variant still works and is applied
+  // once the visitor signs in.
+  const previewName = currentUser?.name ?? "Guest";
+  const previewEmail = currentUser?.email ?? "you@example.com";
+  const previewInitials = currentUser?.initials ?? "GU";
   return (
     <section className="mb-8">
       <div className="mb-4 px-1">
@@ -332,9 +338,9 @@ function MenuProfileStyleSection() {
             description={option.description}
             selected={variant === option.id}
             onSelect={() => setVariant(option.id)}
-            name={currentUser.name}
-            email={currentUser.email}
-            initials={currentUser.initials}
+            name={previewName}
+            email={previewEmail}
+            initials={previewInitials}
           />
         ))}
       </div>

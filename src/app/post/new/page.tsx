@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/app-store";
+import { useRequireAuthPage } from "@/lib/auth";
 import { AppHeader } from "@/components/AppHeader";
 import { Avatar } from "@/components/Avatar";
 import {
@@ -16,14 +17,18 @@ import { ImageIcon, XIcon } from "@/components/icons";
 export default function CreatePostPage() {
   const router = useRouter();
   const { currentUser, createPost } = useAppStore();
+  const handleCancel = useCallback(() => router.back(), [router]);
+  const { isReady } = useRequireAuthPage(handleCancel);
 
   const [content, setContent] = useState("");
   const [location, setLocation] = useState("");
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
   const [isPrivate, setIsPrivate] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const canPost = content.trim().length > 0 || !!imageDataUrl;
+  const canPost =
+    !submitting && (content.trim().length > 0 || !!imageDataUrl);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -33,16 +38,24 @@ export default function CreatePostPage() {
     reader.readAsDataURL(file);
   };
 
-  const handlePost = () => {
+  const handlePost = async () => {
     if (!canPost) return;
-    createPost({
-      content: content.trim(),
-      image: imageDataUrl ?? undefined,
-      location: location.trim() || undefined,
-      isPrivate,
-    });
-    router.back();
+    setSubmitting(true);
+    try {
+      await createPost({
+        content: content.trim(),
+        image: imageDataUrl ?? undefined,
+        location: location.trim() || undefined,
+        isPrivate,
+      });
+      router.back();
+    } catch (err) {
+      console.error("[post/new] failed to create post:", err);
+      setSubmitting(false);
+    }
   };
+
+  if (!isReady || !currentUser) return null;
 
   return (
     <div className="flex flex-col h-full bg-background">

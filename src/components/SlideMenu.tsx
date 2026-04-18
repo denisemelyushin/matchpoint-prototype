@@ -2,12 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/app-store";
+import { useAuth } from "@/lib/auth";
 import { MenuProfileCard } from "./MenuProfileCard";
 import {
   ShieldIcon,
   FileTextIcon,
+  LogInIcon,
   LogOutIcon,
   SlidersIcon,
+  UserIcon,
 } from "./icons";
 
 interface SlideMenuProps {
@@ -23,15 +26,26 @@ interface SlideMenuProps {
 export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
   const router = useRouter();
   const { currentUser } = useAppStore();
+  const { signOut, openAuthModal } = useAuth();
 
   const go = (path: string) => {
     onClose();
     router.push(path);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     onClose();
-    router.push("/");
+    try {
+      await signOut();
+    } catch (err) {
+      console.error("[menu] sign out failed:", err);
+    }
+    router.push("/feed");
+  };
+
+  const handleSignIn = () => {
+    onClose();
+    openAuthModal();
   };
 
   return (
@@ -40,13 +54,32 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
       className="absolute top-0 left-0 bottom-0 z-0 w-[280px] flex flex-col pt-12 bg-background"
     >
       <div className="px-5">
-        <MenuProfileCard
-          name={currentUser.name}
-          email={currentUser.email}
-          initials={currentUser.initials}
-          onEdit={() => go("/profile/edit")}
-          tabIndex={isOpen ? 0 : -1}
-        />
+        {currentUser ? (
+          <MenuProfileCard
+            name={currentUser.name}
+            email={currentUser.email}
+            initials={currentUser.initials}
+            onEdit={() => go("/profile/edit")}
+            tabIndex={isOpen ? 0 : -1}
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={handleSignIn}
+            tabIndex={isOpen ? 0 : -1}
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-2xl bg-surface border border-border/60 active:opacity-80 transition-opacity text-left"
+          >
+            <div className="w-11 h-11 rounded-full bg-surface-light flex items-center justify-center">
+              <UserIcon size={20} color="var(--color-muted)" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-foreground font-semibold text-[15px]">
+                Guest
+              </p>
+              <p className="text-muted text-[12px]">Sign in to get started</p>
+            </div>
+          </button>
+        )}
       </div>
 
       <div className="flex-1 px-3 pt-3">
@@ -85,14 +118,25 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
       </div>
 
       <div className="p-3 pb-6">
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-foreground/5 transition-colors"
-          tabIndex={isOpen ? 0 : -1}
-        >
-          <LogOutIcon size={18} color="var(--color-muted)" />
-          <span className="text-foreground text-[14px]">Log Out</span>
-        </button>
+        {currentUser ? (
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-foreground/5 transition-colors"
+            tabIndex={isOpen ? 0 : -1}
+          >
+            <LogOutIcon size={18} color="var(--color-muted)" />
+            <span className="text-foreground text-[14px]">Log Out</span>
+          </button>
+        ) : (
+          <button
+            onClick={handleSignIn}
+            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-foreground/5 transition-colors"
+            tabIndex={isOpen ? 0 : -1}
+          >
+            <LogInIcon size={18} color="var(--color-muted)" />
+            <span className="text-foreground text-[14px]">Sign In</span>
+          </button>
+        )}
       </div>
     </aside>
   );

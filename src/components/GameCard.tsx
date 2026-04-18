@@ -16,7 +16,7 @@ export function GameCard({ game }: GameCardProps) {
   if (!host) return null;
 
   const isHost = game.userId === currentUserId;
-  const isJoined = game.playerIds.includes(currentUserId);
+  const isJoined = currentUserId !== null && game.playerIds.includes(currentUserId);
   const spotsLeft = game.maxPlayers - game.playerIds.length;
   const isFull = spotsLeft <= 0;
 
@@ -63,8 +63,20 @@ export function GameCard({ game }: GameCardProps) {
           isHost={isHost}
           isJoined={isJoined}
           isFull={isFull}
-          onJoin={() => joinGame(game.id)}
-          onLeave={() => leaveGame(game.id)}
+          onJoin={() => {
+            joinGame(game.id).catch((err) => {
+              if (!(err instanceof Error) || err.message !== "auth-cancelled") {
+                console.error("[GameCard] join failed:", err);
+              }
+            });
+          }}
+          onLeave={() => {
+            leaveGame(game.id).catch((err) => {
+              if (!(err instanceof Error) || err.message !== "auth-cancelled") {
+                console.error("[GameCard] leave failed:", err);
+              }
+            });
+          }}
         />
       </div>
     </div>

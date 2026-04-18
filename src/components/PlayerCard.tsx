@@ -18,24 +18,41 @@ export function PlayerCard({ player }: PlayerCardProps) {
   const friend = isFriend(player.id);
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
 
-  const handleMessage = (e: React.MouseEvent) => {
+  const handleMessage = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const chatId = startOrGetChat(player.id);
-    router.push(`/chat/${chatId}`);
+    try {
+      const chatId = await startOrGetChat(player.id);
+      router.push(`/chat/${chatId}`);
+    } catch (err) {
+      // Swallow cancelled auth; log anything else.
+      if (!(err instanceof Error) || err.message !== "auth-cancelled") {
+        console.error("[PlayerCard] failed to start chat:", err);
+      }
+    }
   };
 
-  const handleFriendToggle = (e: React.MouseEvent) => {
+  const handleFriendToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (friend) {
       setConfirmRemoveOpen(true);
       return;
     }
-    toggleFriend(player.id);
+    try {
+      await toggleFriend(player.id);
+    } catch (err) {
+      if (!(err instanceof Error) || err.message !== "auth-cancelled") {
+        console.error("[PlayerCard] failed to add friend:", err);
+      }
+    }
   };
 
-  const confirmRemove = () => {
+  const confirmRemove = async () => {
     setConfirmRemoveOpen(false);
-    toggleFriend(player.id);
+    try {
+      await toggleFriend(player.id);
+    } catch (err) {
+      console.error("[PlayerCard] failed to remove friend:", err);
+    }
   };
 
   return (

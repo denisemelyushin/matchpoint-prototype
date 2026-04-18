@@ -10,7 +10,10 @@ A mobile-first web app prototype for connecting pickleball players. This documen
 - Styled with **Tailwind CSS**.
 - Must be openable in a **mobile device browser**.
 - On desktop browsers, the app is constrained to a **`max-width` of 480px**, centered, to preserve a mobile-app look.
-- **No external database** required — all data lives in in-memory application state for the prototype.
+- **Firebase** is the backend:
+  - **Firestore** for all app data (users, posts with comments/likes, games, chats with messages). Schema is tracked in `db-schema.md` and security rules live in `firestore.rules`.
+  - **Firebase Authentication** (email + password) for account creation and sign-in. The Auth `uid` is reused as the `users/{userId}` document ID.
+- Web SDK config ships in `.env.local` (and `.env.example` for newcomers). The Admin SDK service-account key path is set via `FIREBASE_SERVICE_ACCOUNT_PATH` for local scripts only; the key itself is `.gitignore`d.
 - Deployed to **Vercel**, published from the `main` branch of the GitHub repository.
 
 ## 2. Design System
@@ -26,7 +29,20 @@ A mobile-first web app prototype for connecting pickleball players. This documen
 
 - **Welcome** and **Onboarding** screens must **not scroll vertically** and must **not trigger pull-to-refresh** or rubber-band overscroll.
 - Main app screens (Feed, Games, Players, Chats, and all sub-screens) may scroll vertically but must suppress pull-to-refresh.
-- All state (profile, posts, comments, likes, games, chats, messages) is kept in a single React context and persists for the lifetime of the browser tab.
+- App data (profile, posts, comments, likes, games, chats, messages) lives in **Firestore** and is streamed into a single React context via real-time subscriptions; UI-only preferences (theme, app-bar / menu-profile / tab-bar variants) remain in `localStorage`.
+
+### 3.1 Guest mode & auth gating
+
+- The app is **usable without signing in**. A guest can browse the Feed, open posts, explore Games, the Players directory, and any user profile.
+- **Interactive actions require an account** and open a modal sign-up / sign-in sheet if the user is currently a guest. The gated actions are:
+  - Creating a post, a game, or a new chat (`+` button on any tab).
+  - Editing the current user's profile / visiting `/profile`.
+  - Liking or commenting on a post.
+  - Joining or leaving a game.
+  - Adding / removing a friend.
+  - Sending a message or opening a chat with another player.
+- The auth modal supports switching between **Sign up** (name, email, password) and **Sign in** (email, password). On success it closes and resumes the action the user initiated.
+- The **slide menu** shows either the logged-in user's profile card or, for guests, a "Sign in" entry; a **Log out** entry appears when signed in and returns the user to guest mode (content still visible, gated actions re-prompt).
 
 ---
 

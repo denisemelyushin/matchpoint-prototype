@@ -1,8 +1,9 @@
 "use client";
 
-import { use, useEffect, useRef, useState } from "react";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/app-store";
+import { useRequireAuthPage } from "@/lib/auth";
 import { AppHeader } from "@/components/AppHeader";
 import { Avatar } from "@/components/Avatar";
 import { MessageBubble } from "@/components/MessageBubble";
@@ -17,11 +18,11 @@ export default function ChatDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const backToChats = useCallback(() => router.push("/chats"), [router]);
+  const { isReady } = useRequireAuthPage(backToChats);
   const { getChat, getUser, currentUserId, sendMessage } = useAppStore();
   const [draft, setDraft] = useState("");
   const endRef = useRef<HTMLDivElement | null>(null);
-
-  const backToChats = () => router.push("/chats");
 
   const chat = getChat(id);
   const otherUserId = chat?.participantIds.find((p) => p !== currentUserId);
@@ -30,6 +31,8 @@ export default function ChatDetailPage({
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat?.messages.length]);
+
+  if (!isReady) return null;
 
   if (!chat || !otherUser) {
     return (
@@ -42,11 +45,16 @@ export default function ChatDetailPage({
     );
   }
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const v = draft.trim();
     if (!v) return;
-    sendMessage(chat.id, v);
     setDraft("");
+    try {
+      await sendMessage(chat.id, v);
+    } catch (err) {
+      console.error("[chat] failed to send message:", err);
+      setDraft(v);
+    }
   };
 
   return (

@@ -2,6 +2,7 @@
 
 import { use, useState } from "react";
 import { useAppStore } from "@/lib/app-store";
+import { useAuth } from "@/lib/auth";
 import { AppHeader } from "@/components/AppHeader";
 import { Avatar } from "@/components/Avatar";
 import { formatRelative } from "@/lib/format";
@@ -21,7 +22,9 @@ export default function PostDetailPage({
   const { id } = use(params);
   const { getPost, getUser, toggleLike, addComment, currentUser } =
     useAppStore();
+  const { openAuthModal } = useAuth();
   const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
 
   const post = getPost(id);
   const author = post ? getUser(post.userId) : undefined;
@@ -37,11 +40,19 @@ export default function PostDetailPage({
     );
   }
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const v = draft.trim();
     if (!v) return;
-    addComment(post.id, v);
+    setSending(true);
     setDraft("");
+    try {
+      await addComment(post.id, v);
+    } catch (err) {
+      console.error("[post] failed to add comment:", err);
+      setDraft(v);
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -165,38 +176,53 @@ export default function PostDetailPage({
       </div>
 
       <div className="border-t border-border bg-surface p-3 safe-bottom">
-        <div className="flex items-center gap-2">
-          <Avatar
-            name={currentUser.name}
-            initials={currentUser.initials}
-            size={32}
-          />
-          <div className="flex-1 flex items-center gap-2 bg-background rounded-full border border-border px-3 py-1.5">
-            <input
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-              placeholder="Add a comment…"
-              className="flex-1 bg-transparent text-foreground placeholder:text-muted focus:outline-none text-[15px]"
+        {currentUser ? (
+          <div className="flex items-center gap-2">
+            <Avatar
+              name={currentUser.name}
+              initials={currentUser.initials}
+              size={32}
             />
-            <button
-              onClick={handleSend}
-              disabled={!draft.trim()}
-              className="p-1.5 rounded-full active:scale-90 transition-transform disabled:opacity-40"
-              aria-label="Send"
-            >
-              <SendIcon
-                size={18}
-                color={draft.trim() ? "var(--color-primary)" : "var(--color-muted)"}
+            <div className="flex-1 flex items-center gap-2 bg-background rounded-full border border-border px-3 py-1.5">
+              <input
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                placeholder="Add a comment…"
+                disabled={sending}
+                className="flex-1 bg-transparent text-foreground placeholder:text-muted focus:outline-none text-[15px] disabled:opacity-60"
               />
-            </button>
+              <button
+                onClick={handleSend}
+                disabled={!draft.trim() || sending}
+                className="p-1.5 rounded-full active:scale-90 transition-transform disabled:opacity-40"
+                aria-label="Send"
+              >
+                <SendIcon
+                  size={18}
+                  color={
+                    draft.trim()
+                      ? "var(--color-primary)"
+                      : "var(--color-muted)"
+                  }
+                />
+              </button>
+            </div>
           </div>
-        </div>
+        ) : (
+          <button
+            type="button"
+            onClick={openAuthModal}
+            className="w-full py-2.5 rounded-full bg-primary text-[var(--app-primary-on)] text-[14px] font-semibold active:opacity-80 transition-opacity"
+          >
+            Sign in to comment
+          </button>
+        )}
       </div>
     </div>
   );

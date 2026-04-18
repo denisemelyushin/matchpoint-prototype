@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/app-store";
+import { useRequireAuthPage } from "@/lib/auth";
 import { AppHeader } from "@/components/AppHeader";
 import { Avatar } from "@/components/Avatar";
 import { SearchIcon } from "@/components/icons";
@@ -10,6 +11,8 @@ import { SearchIcon } from "@/components/icons";
 export default function NewChatPage() {
   const router = useRouter();
   const { users, currentUserId, startOrGetChat } = useAppStore();
+  const handleCancel = useCallback(() => router.back(), [router]);
+  const { isReady } = useRequireAuthPage(handleCancel);
   const [query, setQuery] = useState("");
 
   const candidates = useMemo(
@@ -26,10 +29,16 @@ export default function NewChatPage() {
     );
   }, [candidates, query]);
 
-  const handleSelect = (userId: string) => {
-    const chatId = startOrGetChat(userId);
-    router.replace(`/chat/${chatId}`);
+  const handleSelect = async (userId: string) => {
+    try {
+      const chatId = await startOrGetChat(userId);
+      router.replace(`/chat/${chatId}`);
+    } catch (err) {
+      console.error("[chat/new] failed to start chat:", err);
+    }
   };
+
+  if (!isReady) return null;
 
   return (
     <div className="flex flex-col h-full bg-background">

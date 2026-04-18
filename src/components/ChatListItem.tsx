@@ -8,7 +8,7 @@ import { formatRelative } from "@/lib/format";
 interface ChatListItemProps {
   chat: Chat;
   otherUser: User;
-  currentUserId: string;
+  currentUserId: string | null;
 }
 
 export function ChatListItem({

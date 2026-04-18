@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/app-store";
+import { useRequireAuthPage } from "@/lib/auth";
 import { AppHeader } from "@/components/AppHeader";
 import { Avatar } from "@/components/Avatar";
 import {
@@ -12,11 +13,23 @@ import {
   TextInput,
 } from "@/components/form";
 import { EditIcon } from "@/components/icons";
-import { SKILL_LEVELS, type SkillLevel } from "@/lib/types";
+import { SKILL_LEVELS, type SkillLevel, type User } from "@/lib/types";
 
 export default function EditProfilePage() {
   const router = useRouter();
-  const { currentUser, updateProfile } = useAppStore();
+  const handleCancel = useCallback(() => router.push("/feed"), [router]);
+  const { isReady } = useRequireAuthPage(handleCancel);
+  const { currentUser } = useAppStore();
+
+  if (!isReady || !currentUser) return null;
+
+  // `currentUser` has stabilised — render the form with it as initial state.
+  return <EditProfileForm currentUser={currentUser} />;
+}
+
+function EditProfileForm({ currentUser }: { currentUser: User }) {
+  const router = useRouter();
+  const { updateProfile } = useAppStore();
 
   const [name, setName] = useState(currentUser.name);
   const [bio, setBio] = useState(currentUser.bio);
@@ -24,6 +37,7 @@ export default function EditProfilePage() {
     currentUser.skillLevel
   );
   const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleAvatarClick = () => {
@@ -40,16 +54,22 @@ export default function EditProfilePage() {
     reader.readAsDataURL(file);
   };
 
-  const canSave = name.trim().length > 0;
+  const canSave = !submitting && name.trim().length > 0;
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!canSave) return;
-    updateProfile({
-      name: name.trim(),
-      bio: bio.trim(),
-      skillLevel,
-    });
-    router.back();
+    setSubmitting(true);
+    try {
+      await updateProfile({
+        name: name.trim(),
+        bio: bio.trim(),
+        skillLevel,
+      });
+      router.back();
+    } catch (err) {
+      console.error("[profile/edit] failed to save profile:", err);
+      setSubmitting(false);
+    }
   };
 
   const handleDeleteAccount = () => {

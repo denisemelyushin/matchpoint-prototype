@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { SlideMenu } from "@/components/SlideMenu";
 import { FeedAppBar } from "@/components/FeedAppBar";
 import { BottomTabs, type TabId } from "@/components/BottomTabs";
+import { useAuth } from "@/lib/auth";
 
 const PATH_TO_TAB: Record<string, TabId> = {
   "/feed": "feed",
@@ -36,6 +37,7 @@ const ADD_LABELS: Partial<Record<TabId, string>> = {
 export default function TabsLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { requireAuth } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const activeTab: TabId = PATH_TO_TAB[pathname ?? "/feed"] ?? "feed";
@@ -63,8 +65,16 @@ export default function TabsLayout({ children }: { children: ReactNode }) {
     }
   };
 
-  const handleAdd = () => {
-    if (addRoute) router.push(addRoute);
+  // Tapping "+" requires a signed-in user. If the visitor is still a guest,
+  // open the auth modal first and only navigate once they've signed in.
+  const handleAdd = async () => {
+    if (!addRoute) return;
+    try {
+      await requireAuth();
+      router.push(addRoute);
+    } catch {
+      // User dismissed the modal — stay on the current tab.
+    }
   };
 
   return (

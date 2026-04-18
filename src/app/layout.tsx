@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import { AppStoreProvider } from "@/lib/app-store";
+import { AuthProvider } from "@/lib/auth";
+import { AuthModal } from "@/components/AuthModal";
 import { TabBarVariantProvider } from "@/lib/tab-bar-variant";
 import { AppBarVariantProvider } from "@/lib/app-bar-variant";
 import { MenuProfileVariantProvider } from "@/lib/menu-profile-variant";
@@ -53,15 +55,18 @@ export default function RootLayout({
       <body className="h-full overflow-hidden flex justify-center bg-background">
         <div className="relative w-full h-full max-w-[480px] overflow-hidden">
           <ThemeProvider>
-            <AppStoreProvider>
-              <TabBarVariantProvider>
-                <AppBarVariantProvider>
-                  <MenuProfileVariantProvider>
-                    {children}
-                  </MenuProfileVariantProvider>
-                </AppBarVariantProvider>
-              </TabBarVariantProvider>
-            </AppStoreProvider>
+            <AuthProvider>
+              <AppStoreProvider>
+                <TabBarVariantProvider>
+                  <AppBarVariantProvider>
+                    <MenuProfileVariantProvider>
+                      {children}
+                      <AuthModal />
+                    </MenuProfileVariantProvider>
+                  </AppBarVariantProvider>
+                </TabBarVariantProvider>
+              </AppStoreProvider>
+            </AuthProvider>
           </ThemeProvider>
         </div>
       </body>

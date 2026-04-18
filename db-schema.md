@@ -89,9 +89,10 @@ A feed post. Visible to everyone unless `isPrivate`, in which case only the auth
 
 Presence of a doc at this path means `userId` liked the post. Keeps like state per user without a separate query.
 
-| Field       | Type        | Required | Notes                               |
-| ----------- | ----------- | :------: | ----------------------------------- |
-| `createdAt` | `Timestamp` |    ✓     | When the like happened.             |
+| Field       | Type        | Required | Notes                                                                    |
+| ----------- | ----------- | :------: | ------------------------------------------------------------------------ |
+| `userId`    | `string`    |    ✓     | Redundant with the doc ID, but required so `collectionGroup("likes")` queries can filter by the liking user. |
+| `createdAt` | `Timestamp` |    ✓     | When the like happened.                                                  |
 
 ---
 
@@ -145,21 +146,19 @@ A 1:1 conversation. `chatId` is deterministic from the pair so each pair has exa
 
 ---
 
-## Security rules (sketch)
+## Security rules
 
-Firestore rules should enforce:
+The live rules live in `firestore.rules` and are deployed to the project via `npm run db:deploy-rules` (uses the Admin SDK service-account credentials — no `firebase login` required).
 
-- `users/{userId}`: anyone signed in can read; only the owner can write (`request.auth.uid == userId`).
-- `posts/{postId}`:
-  - **Read**: public posts are world-readable (signed in). Private posts readable only by the author (`resource.data.userId == request.auth.uid`).
-  - **Write**: only the author can create / update / delete; `userId` is forced to `request.auth.uid` on create.
-  - `comments`: any signed-in user can create their own comment (`request.resource.data.userId == request.auth.uid`); only the comment author (or post author) can delete.
-  - `likes/{userId}`: only `request.auth.uid == userId` can create or delete that like document.
-- `games/{gameId}`: similar rules to posts. `playerIds` can only be mutated via join/leave flows that require the acting user to be in / not in the array, and length must stay ≤ `maxPlayers`.
-- `chats/{chatId}`: both read and write restricted to users whose `uid` appears in `participantIds`. On create, `participantIds` must contain `request.auth.uid` and the computed `chatId` must match the deterministic derivation so pairs can't fork into multiple chats.
-- `chats/{chatId}/messages/{messageId}`: create-only for participants; `senderId` must equal `request.auth.uid`. Edits/deletes not permitted from the client.
+Current policy:
 
-Detailed rules live in `firestore.rules` once Firebase is wired up.
+- **`users/{userId}`** — public read (guest-friendly); only the owner can create / update. Deletes disabled.
+- **`posts/{postId}`** — public read (the `isPrivate` flag is enforced as a client-side display filter only; Firestore list queries can't evaluate doc-field-dependent rules cleanly in a prototype). Create / delete only by author; updates by author or by any signed-in user changing only the denormalised `likeCount` / `commentCount`.
+  - **`comments`**: public read; create by any signed-in user with `userId == request.auth.uid`; delete by the comment author only. Also reachable via a collection-group rule (`match /{path=**}/comments/{commentId}`).
+  - **`likes/{userId}`**: public read; create / delete only by `userId == request.auth.uid`. Also reachable via a collection-group rule (`match /{path=**}/likes/{likeId}`).
+- **`games/{gameId}`** — public read (privacy is client-side for the prototype). Create by host with `userId == request.auth.uid`. Updates restricted to the host OR a valid self-join / self-leave on `playerIds` + `playerCount` that respects `maxPlayers`.
+- **`chats/{chatId}`** — read / write only for users whose uid is in `participantIds`. On create, the caller must be one of the two participants. Deletes disabled.
+- **`chats/{chatId}/messages/{messageId}`** — read / create only for chat participants; `senderId` must equal `request.auth.uid`. Edits / deletes not permitted from the client.
 
 ---
 
@@ -179,4 +178,18 @@ These constraints are enforced in the app today and should also be enforced in r
 
 ## Seed / demo data
 
-The prototype currently ships with an in-memory seed (see `src/lib/app-store.tsx`). When migrating to Firestore, the initial dataset should be loaded once via an admin script; the client should not create seed data at runtime.
+Demo users, posts, comments, likes, and games are loaded into Firestore via `scripts/seed.ts` (run with `npm run db:seed`). The script uses the Firebase Admin SDK and the service-account key pointed to by `FIREBASE_SERVICE_ACCOUNT_PATH` in `.env.local`. The client no longer creates seed data at runtime — it only subscribes to Firestore.
+
+`scripts/inspect.ts` (`npm run db:inspect`) prints collection counts to verify a seed.
+
+---
+
+## Operational scripts
+
+| Script                        | Command                   | Purpose                                                                 |
+| ----------------------------- | ------------------------- | ----------------------------------------------------------------------- |
+| `scripts/seed.ts`             | `npm run db:seed`         | Populate Firestore with the demo dataset.                               |
+| `scripts/inspect.ts`          | `npm run db:inspect`      | Print counts of top-level collections for a sanity check.               |
+| `scripts/deploy-rules.ts`     | `npm run db:deploy-rules` | Publish `firestore.rules` and attempt to create `firestore.indexes.json` indexes via the Firebase Rules / Firestore Admin REST APIs using the Admin SDK access token. |
+
+> Note: deploying composite indexes via the service account requires the `roles/datastore.indexAdmin` (or `roles/datastore.owner`) role on the project. Without it the script will log a 403 for the index calls and the corresponding queries may need to be created once in the Firebase console.

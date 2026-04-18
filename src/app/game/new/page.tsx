@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/app-store";
+import { useRequireAuthPage } from "@/lib/auth";
 import { AppHeader } from "@/components/AppHeader";
 import {
   FieldLabel,
@@ -23,6 +24,8 @@ const CUSTOM_COURT_VALUE = "__custom__";
 export default function CreateGamePage() {
   const router = useRouter();
   const { createGame } = useAppStore();
+  const handleCancel = useCallback(() => router.back(), [router]);
+  const { isReady } = useRequireAuthPage(handleCancel);
 
   const defaultDate = useMemo(() => {
     const d = new Date();
@@ -40,6 +43,7 @@ export default function CreateGamePage() {
   const [maxPlayers, setMaxPlayers] = useState("4");
   const [notes, setNotes] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const court =
     courtSelection === CUSTOM_COURT_VALUE
@@ -48,25 +52,34 @@ export default function CreateGamePage() {
 
   const max = parseInt(maxPlayers, 10);
   const canSave =
+    !submitting &&
     court.length > 0 &&
     datetime.length > 0 &&
     !Number.isNaN(max) &&
     max >= 2 &&
     max <= 16;
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!canSave) return;
-    const iso = new Date(datetime).toISOString();
-    createGame({
-      court,
-      date: iso,
-      minSkill,
-      maxPlayers: max,
-      notes: notes.trim() || undefined,
-      isPrivate,
-    });
-    router.back();
+    setSubmitting(true);
+    try {
+      const iso = new Date(datetime).toISOString();
+      await createGame({
+        court,
+        date: iso,
+        minSkill,
+        maxPlayers: max,
+        notes: notes.trim() || undefined,
+        isPrivate,
+      });
+      router.back();
+    } catch (err) {
+      console.error("[game/new] failed to create game:", err);
+      setSubmitting(false);
+    }
   };
+
+  if (!isReady) return null;
 
   return (
     <div className="flex flex-col h-full bg-background">

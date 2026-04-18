@@ -1,7 +1,9 @@
 "use client";
 
+import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/app-store";
+import { useRequireAuthPage } from "@/lib/auth";
 import { AppHeader } from "@/components/AppHeader";
 import { Avatar } from "@/components/Avatar";
 import { PostCard } from "@/components/PostCard";
@@ -9,7 +11,11 @@ import { EditIcon, TrophyIcon } from "@/components/icons";
 
 export default function ProfilePage() {
   const router = useRouter();
+  const handleCancel = useCallback(() => router.push("/feed"), [router]);
+  const { isReady } = useRequireAuthPage(handleCancel);
   const { currentUser, posts } = useAppStore();
+
+  if (!isReady || !currentUser) return null;
 
   const myPosts = posts.filter((p) => p.userId === currentUser.id);
 

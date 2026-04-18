@@ -27,7 +27,11 @@ export function PostCard({ post }: PostCardProps) {
 
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
-    toggleLike(post.id);
+    toggleLike(post.id).catch((err) => {
+      if (!(err instanceof Error) || err.message !== "auth-cancelled") {
+        console.error("[PostCard] like failed:", err);
+      }
+    });
   };
 
   if (!author) return null;
