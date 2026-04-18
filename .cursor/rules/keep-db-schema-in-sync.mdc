@@ -1,0 +1,48 @@
+---
+description: Keep db-schema.md in sync with the app's data model
+alwaysApply: true
+---
+
+# Keep `db-schema.md` In Sync
+
+`db-schema.md` at the repo root is the single source of truth for the Firestore collections, documents, fields, and indexes this app reads and writes. It must stay accurate.
+
+## When to update `db-schema.md`
+
+Update it in the **same change** whenever any of these happen:
+
+- A TypeScript type in `src/lib/types.ts` (or the `AppStore` shape in `src/lib/app-store.tsx`) gains, loses, or renames a field — `User`, `Post`, `Comment`, `Game`, `Message`, `Chat`, `SkillLevel`, etc.
+- A new collection or subcollection is introduced (e.g. notifications, reports, invites).
+- A field's type, enum set, required/optional status, default, or validation range changes.
+- A denormalised counter or preview field is added, removed, or renamed (e.g. `likeCount`, `lastMessagePreview`).
+- A document ID scheme changes (e.g. `chatId` derivation, switching from auto-IDs to deterministic IDs).
+- A Firestore composite index becomes necessary for a new query, or an existing one is dropped.
+- Security rule intent changes (who can read/write what) — update the "Security rules (sketch)" section.
+- A write path in the app starts persisting a new field, or stops writing an existing one.
+
+## When NOT to touch it
+
+- Pure UI refactors that don't change which fields are read or written.
+- Cosmetic code changes (formatting, renames of local variables, component extraction) that don't alter stored data.
+- Adding client-only derived values that never touch Firestore (e.g. a memoised label).
+
+## How to update
+
+1. Read `db-schema.md` first — find the section(s) the change touches (`users`, `posts`, `games`, `chats`, subcollections, Conventions, Security rules, Field-level validation).
+2. Edit those sections in place. Do **not** append "changelog" entries.
+3. Keep the structure: collection headings, field tables with columns **Field / Type / Required / Notes**, followed by **Indexes** when relevant.
+4. Use Firestore-native types in the `Type` column (`string`, `number`, `boolean`, `Timestamp`, `string[]`, `map`). Only mention app-level enums inline in **Notes**.
+5. If a field is derived or denormalised, say so in **Notes** and name the authoritative source (e.g. "Denormalised count. Authoritative source is `posts/{postId}/likes`.").
+6. When adding a collection, also add it to the **Collection map** tree near the top.
+7. If the change introduces a new query pattern, add the required index under that collection's **Indexes** list.
+8. Update **Field-level validation** whenever a client-side constraint (length, range, enum) changes.
+9. Commit `db-schema.md` together with the code change; the commit message should mention both (e.g. `Add avatarUrl to users and update db-schema`).
+
+## Quick checklist before finishing a change
+
+- [ ] Did a stored field, collection, or index change? If yes → `db-schema.md` edited.
+- [ ] Are the field tables still aligned (same columns, same order) and do all new fields have a Type and Required column?
+- [ ] Are any now-inaccurate rows removed or updated (old field names, stale enums)?
+- [ ] Is the Collection map updated if a collection/subcollection was added or removed?
+- [ ] Are new composite indexes listed under the affected collection?
+- [ ] Committed together with the code change?
