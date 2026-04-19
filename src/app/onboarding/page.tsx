@@ -65,7 +65,7 @@ const STEPS: Step[] = [
     kind: "feature",
     icon: UserIcon,
     title: "Let's Get You on the Court!",
-    description: "Create your profile.",
+    description: "Start exploring the app.",
   },
 ];
 

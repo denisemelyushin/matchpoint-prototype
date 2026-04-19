@@ -81,7 +81,7 @@ A six-slide horizontal carousel. The first slide is the branded **welcome** scre
 | 2 | Schedule & Join Games | Create games or join open matches in your area. |
 | 3 | Stay Connected with Players | Message players and coordinate games easily. |
 | 4 | Share the Game | Post your games and see your friends playing on the social feed. |
-| 5 | Let's Get You on the Court! | Create your profile. |
+| 5 | Let's Get You on the Court! | Start exploring the app. |
 
 ---
 
