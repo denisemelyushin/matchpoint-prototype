@@ -18,11 +18,10 @@ A mobile-first web app prototype for connecting pickleball players. This documen
 
 ## 2. Design System
 
-- **Dark theme** throughout the app.
-- Primary accent color: **`#96FE17`** (green), used for primary buttons, active tab, highlights, and links.
-- Background: near-black (`#0A0A0A`), surfaces in slightly lighter greys.
-- Visual language inspired by the Strava mobile app: modern, clean, content-forward, with rounded cards and generous spacing.
-- Typography: Geist Sans.
+- **Default look-and-feel** is the Strava-inspired **Midnight Lime** theme: near-black background (`#0A0A0A`), slightly lighter greys for surfaces, and a neon pickleball-green primary accent (`#96FE17`) used for primary buttons, active tab, highlights, and links. Modern, clean, content-forward, with rounded cards and generous spacing.
+- The app ships with **five swappable themes** (see §16 for the picker), each inspired by a popular sport or social app and covering a distinct mood — four dark themes and one light theme. The default theme is Midnight Lime (Strava).
+- Every theme ships the same set of CSS custom properties (`--app-bg`, `--app-fg`, `--app-primary`, `--app-primary-dark`, `--app-primary-on`, `--app-accent`, `--app-surface`, `--app-surface-light`, `--app-muted`, `--app-border`, `--app-font-body`) so changing one instantly re-skins the whole app without any component-level branching.
+- Typography: Geist Sans by default; the Jet Noir theme switches the body stack to the iOS system font (`-apple-system, SF Pro Text, …`).
 - Mobile-native touches: active-scale tap feedback, bottom-safe-area padding, no browser scrollbars, no tap highlight.
 
 ## 3. Global Behavior
@@ -84,43 +83,28 @@ A mobile-first web app prototype for connecting pickleball players. This documen
 
 The main app has a persistent layout:
 
-- **Top-left corner**: **Menu** button, opens the slide-out menu.
-- **Top-right corner**: **Add** button (plus icon) that creates new content for the active tab — a new post on Feed, a new game on Games, a new chat on Chats. The button is hidden on the Players tab; a spacer is rendered so the title stays centered. Tapping **Add** pushes the creation screen (`/post/new`, `/game/new`, `/chat/new`); hitting the back arrow on any of those screens returns to the originating tab because each tab is its own top-level route (`/feed`, `/games`, `/players`, `/chats`) — so the browser back stack naturally points at the tab the user was on (e.g. Games → `/game/new` → Back → `/games`).
-- The visual style of the top app bar can be switched from the **Settings** screen (see §16). The choice is persisted in `localStorage` under `matchpoint:app-bar-variant`. Available variants, in the order they are displayed in Settings:
-  - **A — Big icons** (default): larger (30 px) burger and plus icons and a fixed "MatchPoint Pro" brand label in the centre (same on every tab).
-  - **B — Classic**: stroke burger menu, centred page title, stroke plus icon (24 px).
-  - **C — Framed**: burger and plus icons tucked inside rounded-square surface tiles for a tactile "button" feel; centred title between them.
-  - **D — Branded**: stroke burger, centred **"Matchpoint" wordmark** (replaces the page title), stroke plus.
-- **Bottom tab bar** with four tabs:
+- **Top app bar** — fixed layout on every main tab: a large (30 px) burger icon in the top-left opens the slide-out menu, a fixed **"MatchPoint Pro"** brand label sits in the centre on every tab, and a large (30 px) plus icon in the top-right creates new content for the active tab — a new post on Feed, a new game on Games, a new chat on Chats. The plus button is hidden on the Players tab; an equal-width spacer is rendered so the brand label stays centred. Tapping **Add** pushes the creation screen (`/post/new`, `/game/new`, `/chat/new`); hitting the back arrow on any of those screens returns to the originating tab because each tab is its own top-level route (`/feed`, `/games`, `/players`, `/chats`) — so the browser back stack naturally points at the tab the user was on (e.g. Games → `/game/new` → Back → `/games`).
+- **Bottom tab bar** — a rounded capsule **floating dock** detached from the bottom edge with a soft shadow, containing four tabs (in order):
   1. **Feed**
   2. **Games**
   3. **Players**
   4. **Chats**
-- Active tab is highlighted in the primary green color; inactive tabs are muted grey.
-- The visual style of the bottom tab bar can be switched from the **Settings** screen (see §16). The choice is persisted in `localStorage` under `matchpoint:tab-bar-variant` so it survives reloads. Available variants:
-  - **A — Floating dock**: rounded capsule detached from the bottom edge with a soft shadow.
-  - **B — Sliding pill**: flush bar with a highlight pill that animates horizontally between tabs.
-  - **C — Expanding pill (Material 3)**: inactive tabs show icon only; the active tab expands to reveal its label.
-  - **D — Indicator line**: minimal — a short primary-coloured dash appears under the active tab.
+
+  Active tab is highlighted with a primary-tinted rounded pill and primary-coloured icon + label; inactive tabs are muted grey.
 
 ## 7. Slide Menu
 
-Uses an **underlay drawer** pattern (iOS-style side drawer): the menu and the main app shell sit on separate layers inside the 480px mobile frame. The menu is stationary, anchored to the left edge of the frame on a lower layer. The main shell sits on a higher layer and slides to the **right** by the menu's width (280px) to reveal the menu underneath.
+Uses an **underlay drawer** pattern (iOS-style side drawer): the menu and the main app shell sit on separate layers inside the 480px mobile frame. The menu is stationary, anchored to the left edge of the frame on a lower layer. The main shell sits on a higher layer and slides to the **right** by the menu's width (320px) to reveal the menu underneath.
 
 Open / close behavior:
 
-- Open: triggered by the top-left Menu button. Over ~400ms with a smooth easing curve, the main app shell translates 280px to the right (revealing the menu beneath) and picks up a soft shadow on its left edge. Its right portion is clipped by the phone frame, leaving a narrow peek of main content. The menu itself does not animate — it is already in place underneath.
+- Open: triggered by the top-left Menu button. Over ~400ms with a smooth easing curve, the main app shell translates 320px to the right (revealing the menu beneath) and picks up a soft shadow on its left edge. Its right portion is clipped by the phone frame, leaving a narrow peek of main content. The menu itself does not animate — it is already in place underneath.
 - Close: tapping anywhere on the offset main content, or pressing **Escape**, slides the main shell back into place, hiding the menu again.
 - There is no visible scrim and no explicit close button — the offset main content itself is the tap-to-close affordance.
 
 Menu contents, from top to bottom:
 
-1. **Profile card** at the top — its visual style is picked from Settings (see §16) and has four variants. In every variant the whole tile is a single tap target that opens the Edit Profile screen directly; there is never a separate edit button, and any pencil icon shown is purely decorative:
-   - **A · Classic** (default) — filled `surface-light` card with a roomy profile row (avatar 52, name, email).
-   - **B · Airy** — outlined card with a thin border and no filled background; same roomy profile row as Classic.
-   - **C · Compact** — filled `surface-light` card with a compact profile row (avatar 44, smaller name/email) and a small decorative pencil icon on the right as an edit hint.
-   - **D · Airy + hint** — outlined card (like B) with a roomy profile row plus a small decorative pencil icon on the right as an edit hint.
-   The chosen variant is persisted in `localStorage` under `matchpoint:menu-profile-variant`.
+1. **Profile card** at the top — an outlined card with a thin border and no filled background, showing the current user's avatar (52 px), name, and email. The whole tile is a single tap target that opens the Edit Profile screen directly; there is never a separate edit button.
 2. **Settings** link — opens the Settings screen (see §16).
 3. **Privacy Policy** link (opens a page).
 4. **Terms of Use** link (opens a page).
@@ -309,32 +293,18 @@ Reached from the **Settings** entry in the slide menu. Regular sub-page layout (
 
 Sections, in order:
 
-- **Reset Default Settings** — a full-width, rounded-rectangle button in the primary accent colour (primary-tinted fill, primary-coloured border and label) rendered at the very top of the page, above all other sections. It is shown **only when at least one setting differs from its default** (theme, app bar, menu profile, or tab bar). Tapping it opens a confirmation dialog ("Reset settings?") explaining that the action restores the default theme, app bar, menu profile, and tab bar styles without touching account data. Confirming applies every default (`Midnight Lime` theme, app bar **A · Big icons**, menu profile **A · Airy + hint**, tab bar **A · Floating dock**) instantly, persists the reset to `localStorage`, and the button vanishes again until the user next customises something.
-- **App theme** — a picker of seven named colour themes tuned for the product (sport/social): four dark (`Midnight Lime` — default; `Court Blue`; `Ember`; `Violet Rally`) and three light (`Daylight`; `Paper`; `Coral`). Each option is rendered as a swatch tile showing the theme's background, surface, and primary accent; the active theme gets a primary-coloured ring and check badge. Selecting a theme:
-  - Instantly re-skins the entire app by swapping a set of CSS custom properties (`--app-bg`, `--app-fg`, `--app-primary`, `--app-surface`, `--app-border`, `--app-muted`, …) via `[data-theme="…"]` on `<html>`.
-  - Persists the choice in `localStorage` under `matchpoint:theme` and is applied before hydration by a small inline script in the document head, so light-theme users don't get a dark-theme flash on reload.
+- **App theme** — a picker of five named themes, each inspired by a popular sport or social app and covering a distinct mood. Options (in order):
+  - **Midnight Lime** (default) — inspired by **Strava**. Performance athletic: deep black canvas, neon pickleball-green primary.
+  - **Volt Slab** — inspired by **Nike Run Club**. Editorial brutalist: pure black + Volt lime, hard corners, oversized uppercase headings.
+  - **Party Plum** — inspired by **Partiful**. Playful social: warm plum background with a hot-pink → tangerine gradient primary and softer, more rounded surfaces.
+  - **Jet Noir** — inspired by **Apple Fitness+**. Calm iOS-native: jet-black canvas, iOS-green primary, iOS-neutral greys, system font stack.
+  - **Court Green** — inspired by **Playtomic**. Court-native sporty **light mode**: crisp off-white canvas, tennis-green primary, clay-orange accent.
+
+  Each option is rendered as a full-width tile: on the left a preview strip shows the theme's background, a surface tile, faux text bars, the accent dot, and the primary (or gradient) dot; on the right the tile labels the theme with its name, the app it's inspired by, and a one-line mood description. The active theme gets a primary-coloured ring and a check badge.
+
+  Selecting a theme:
+  - Instantly re-skins the entire app by swapping the `--app-*` CSS custom properties via `[data-theme="…"]` on `<html>`; some themes also adjust body type (uppercase headings for Volt Slab, tighter tracking for Jet Noir, gradient fills on primary buttons for Party Plum).
+  - Persists the choice in `localStorage` under `matchpoint:theme` and is applied before hydration by a small inline script in the document head, so users don't get a flash of the default theme on reload.
   - Updates the mobile browser chrome colour (`<meta name="theme-color">`) to match.
-- **App bar style** — a picker of four visual variants for the top app bar used across the Feed, Games, Players and Chats screens. Options are relabeled A–D top-to-bottom in the displayed order so the user-visible letter matches the position. The first option is selected by default. Each row is a card with an inline live preview of that variant rendered above its label and description:
-  - **A · Big icons** (default) — larger (30 px) burger and plus icons with a fixed "MatchPoint Pro" brand title in the centre.
-  - **B · Classic** — stroke burger, centred bold page title, stroke plus (24 px icons).
-  - **C · Framed** — burger and plus icons wrapped in rounded-square surface tiles; centred title between them.
-  - **D · Branded** — stroke burger, centred "Matchpoint" wordmark (replaces the title), stroke plus.
 
-  The preview inside each card is purely decorative (static elements, not nested buttons) so the whole card acts as a single selection control. Selecting a variant:
-  - Instantly re-skins the top bar everywhere it appears.
-  - Persists the choice in `localStorage` under `matchpoint:app-bar-variant` so it survives reloads.
-  - Marks the selected row with a filled primary-coloured check indicator; others show a neutral outlined circle.
-- **Menu profile style** — a picker of four visual variants for the profile card at the top of the slide-out menu. Options are relabeled A–D top-to-bottom in the displayed order so the user-visible letter matches the position. The first option is selected by default. Each row renders a live, decorative preview of the card filled with the current user's name, email and initials. In every variant the whole tile is a single tap target that opens the Edit Profile screen directly; any pencil icon shown is purely decorative:
-  - **A · Airy + hint** (default) — outlined card with a thin border, a roomy profile row, and a small decorative pencil icon on the right as an edit hint.
-  - **B · Compact** — filled `surface-light` card with a compact profile row and a small decorative pencil icon on the right as an edit hint.
-  - **C · Airy** — outlined card with a thin border and no filled background; roomy profile row.
-  - **D · Classic** — filled `surface-light` card with a roomy profile row.
-
-  Selecting a variant instantly re-skins the profile card in the slide-out menu and persists the choice in `localStorage` under `matchpoint:menu-profile-variant`.
-- **Tab bar style** — radio-style list of the four visual variants available for the bottom tab bar (Floating dock, Sliding pill, Expanding pill, Indicator line). Selecting an option:
-  - Instantly re-skins the bottom tab bar across the app.
-  - Persists the choice in `localStorage` under `matchpoint:tab-bar-variant` so it survives reloads.
-  - Marks the selected row with a filled primary-coloured check indicator; others show a neutral outlined circle.
-- **Preview** — a demo tab bar rendered inline below the variant list, framed inside a rounded card with a subtle border. It uses the same four tabs (Feed, Games, Players, Chats) and adopts whichever variant is currently selected, so changes in the list re-skin the preview immediately. Tapping a tab in the preview only updates its local active state — it does **not** navigate anywhere, so users can explore the active/inactive transitions of each style without leaving the Settings screen.
-
-The screen is a container for future account/app preferences; the reset-default-settings button, app theme picker, app bar style picker, menu profile style picker, tab bar style section, and its preview ship today.
+The screen is a container for future account/app preferences; today it ships only the app theme picker.

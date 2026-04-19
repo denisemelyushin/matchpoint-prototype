@@ -2,18 +2,13 @@
 
 import type { ReactNode } from "react";
 import { Avatar } from "./Avatar";
-import { EditIcon } from "./icons";
-import {
-  useMenuProfileVariant,
-  type MenuProfileVariant,
-} from "@/lib/menu-profile-variant";
 
 interface MenuProfileCardProps {
   name: string;
   email: string;
   initials: string;
   /**
-   * Called when the card is tapped. Every variant is a single tap target
+   * Called when the card is tapped. The whole card is a single tap target
    * that goes directly to the edit-profile screen.
    */
   onEdit?: () => void;
@@ -23,51 +18,10 @@ interface MenuProfileCardProps {
    * displayed inside another interactive container (e.g. a picker tile).
    */
   decorative?: boolean;
-  /** Override the context variant; primarily for preview use. */
-  variant?: MenuProfileVariant;
 }
 
-type VariantSpec = {
-  containerClass: string;
-  avatarSize: number;
-  nameClass: string;
-  emailClass: string;
-  showPencil?: boolean;
-};
-
-const VARIANT_SPECS: Record<MenuProfileVariant, VariantSpec> = {
-  A: {
-    containerClass:
-      "bg-surface-light rounded-2xl p-4 flex items-center gap-3",
-    avatarSize: 52,
-    nameClass: "font-semibold text-foreground text-[15px] truncate",
-    emailClass: "text-muted text-xs truncate mt-0.5",
-  },
-  B: {
-    containerClass:
-      "rounded-2xl border border-border/60 p-4 flex items-center gap-3",
-    avatarSize: 52,
-    nameClass: "font-semibold text-foreground text-[15px] truncate",
-    emailClass: "text-muted text-xs truncate mt-0.5",
-  },
-  C: {
-    containerClass:
-      "bg-surface-light rounded-2xl p-3 pr-4 flex items-center gap-3",
-    avatarSize: 44,
-    nameClass:
-      "font-semibold text-foreground text-[14px] truncate leading-tight",
-    emailClass: "text-muted text-[11px] truncate mt-0.5",
-    showPencil: true,
-  },
-  D: {
-    containerClass:
-      "rounded-2xl border border-border/60 p-4 pr-5 flex items-center gap-3",
-    avatarSize: 52,
-    nameClass: "font-semibold text-foreground text-[15px] truncate",
-    emailClass: "text-muted text-xs truncate mt-0.5",
-    showPencil: true,
-  },
-};
+const CONTAINER_CLASS =
+  "rounded-2xl border border-border/60 p-4 flex items-center gap-3";
 
 export function MenuProfileCard({
   name,
@@ -76,24 +30,18 @@ export function MenuProfileCard({
   onEdit,
   tabIndex = 0,
   decorative = false,
-  variant: variantOverride,
 }: MenuProfileCardProps) {
-  const ctx = useMenuProfileVariant();
-  const variant = variantOverride ?? ctx.variant;
-  const spec = VARIANT_SPECS[variant];
-
   const body = (
     <>
-      <Avatar name={name} initials={initials} size={spec.avatarSize} />
+      <Avatar name={name} initials={initials} size={44} />
       <span className="min-w-0 flex-1 block">
-        <span className={`${spec.nameClass} block`}>{name}</span>
-        <span className={`${spec.emailClass} block`}>{email}</span>
-      </span>
-      {spec.showPencil && (
-        <span aria-hidden className="shrink-0 text-muted">
-          <EditIcon size={16} color="currentColor" />
+        <span className="font-semibold text-foreground text-[17px] truncate block leading-tight">
+          {name}
         </span>
-      )}
+        <span className="text-muted text-[13px] truncate block leading-tight">
+          {email}
+        </span>
+      </span>
     </>
   );
 
@@ -102,7 +50,7 @@ export function MenuProfileCard({
       decorative={decorative}
       onClick={onEdit}
       tabIndex={tabIndex}
-      className={spec.containerClass}
+      className={CONTAINER_CLASS}
     >
       {body}
     </Tile>

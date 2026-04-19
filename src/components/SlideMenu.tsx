@@ -51,7 +51,7 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
   return (
     <aside
       aria-hidden={!isOpen}
-      className="absolute top-0 left-0 bottom-0 z-0 w-[280px] flex flex-col pt-12 bg-background"
+      className="absolute top-0 left-0 bottom-0 z-0 w-[320px] flex flex-col pt-12 bg-background"
     >
       <div className="px-5">
         {currentUser ? (
@@ -73,45 +73,47 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
               <UserIcon size={20} color="var(--color-muted)" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-foreground font-semibold text-[15px]">
+              <p className="text-foreground font-semibold text-[17px] leading-tight">
                 Guest
               </p>
-              <p className="text-muted text-[12px]">Sign in to get started</p>
+              <p className="text-muted text-[13px] leading-tight mt-0.5">
+                Sign in to get started
+              </p>
             </div>
           </button>
         )}
       </div>
 
-      <div className="flex-1 px-3 pt-3">
+      <div className="flex-1 px-3 pt-4">
         <button
           onClick={() => go("/settings")}
-          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-foreground/5 transition-colors"
+          className="flex items-center gap-4 w-full px-4 py-3.5 rounded-xl active:bg-foreground/5 transition-colors"
           tabIndex={isOpen ? 0 : -1}
         >
-          <SlidersIcon size={18} color="var(--color-muted)" />
-          <span className="flex-1 text-foreground text-[14px] text-left">
+          <SlidersIcon size={22} color="var(--color-muted)" />
+          <span className="flex-1 text-foreground text-[16px] text-left">
             Settings
           </span>
         </button>
 
         <button
           onClick={() => go("/privacy")}
-          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-foreground/5 transition-colors"
+          className="flex items-center gap-4 w-full px-4 py-3.5 rounded-xl active:bg-foreground/5 transition-colors"
           tabIndex={isOpen ? 0 : -1}
         >
-          <ShieldIcon size={18} color="var(--color-muted)" />
-          <span className="flex-1 text-foreground text-[14px] text-left">
+          <ShieldIcon size={22} color="var(--color-muted)" />
+          <span className="flex-1 text-foreground text-[16px] text-left">
             Privacy Policy
           </span>
         </button>
 
         <button
           onClick={() => go("/terms")}
-          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-foreground/5 transition-colors"
+          className="flex items-center gap-4 w-full px-4 py-3.5 rounded-xl active:bg-foreground/5 transition-colors"
           tabIndex={isOpen ? 0 : -1}
         >
-          <FileTextIcon size={18} color="var(--color-muted)" />
-          <span className="flex-1 text-foreground text-[14px] text-left">
+          <FileTextIcon size={22} color="var(--color-muted)" />
+          <span className="flex-1 text-foreground text-[16px] text-left">
             Terms of Use
           </span>
         </button>
@@ -121,20 +123,20 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
         {currentUser ? (
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-foreground/5 transition-colors"
+            className="flex items-center gap-4 w-full px-4 py-3.5 rounded-xl active:bg-foreground/5 transition-colors"
             tabIndex={isOpen ? 0 : -1}
           >
-            <LogOutIcon size={18} color="var(--color-muted)" />
-            <span className="text-foreground text-[14px]">Log Out</span>
+            <LogOutIcon size={22} color="var(--color-muted)" />
+            <span className="text-foreground text-[16px]">Log Out</span>
           </button>
         ) : (
           <button
             onClick={handleSignIn}
-            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl active:bg-foreground/5 transition-colors"
+            className="flex items-center gap-4 w-full px-4 py-3.5 rounded-xl active:bg-foreground/5 transition-colors"
             tabIndex={isOpen ? 0 : -1}
           >
-            <LogInIcon size={18} color="var(--color-muted)" />
-            <span className="text-foreground text-[14px]">Sign In</span>
+            <LogInIcon size={22} color="var(--color-muted)" />
+            <span className="text-foreground text-[16px]">Sign In</span>
           </button>
         )}
       </div>

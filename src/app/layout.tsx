@@ -4,9 +4,6 @@ import "./globals.css";
 import { AppStoreProvider } from "@/lib/app-store";
 import { AuthProvider } from "@/lib/auth";
 import { AuthModal } from "@/components/AuthModal";
-import { TabBarVariantProvider } from "@/lib/tab-bar-variant";
-import { AppBarVariantProvider } from "@/lib/app-bar-variant";
-import { MenuProfileVariantProvider } from "@/lib/menu-profile-variant";
 import { ThemeProvider, THEME_INIT_SCRIPT } from "@/lib/theme";
 
 const geistSans = Geist({
@@ -57,14 +54,8 @@ export default function RootLayout({
           <ThemeProvider>
             <AuthProvider>
               <AppStoreProvider>
-                <TabBarVariantProvider>
-                  <AppBarVariantProvider>
-                    <MenuProfileVariantProvider>
-                      {children}
-                      <AuthModal />
-                    </MenuProfileVariantProvider>
-                  </AppBarVariantProvider>
-                </TabBarVariantProvider>
+                {children}
+                <AuthModal />
               </AppStoreProvider>
             </AuthProvider>
           </ThemeProvider>

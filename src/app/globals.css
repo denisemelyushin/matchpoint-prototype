@@ -10,6 +10,7 @@
   --color-foreground: var(--app-fg);
   --color-primary: var(--app-primary);
   --color-primary-dark: var(--app-primary-dark);
+  --color-accent: var(--app-accent);
   --color-surface: var(--app-surface);
   --color-surface-light: var(--app-surface-light);
   --color-muted: var(--app-muted);
@@ -18,102 +19,150 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* ----- Dark · Midnight Lime (default) -------------------------------- */
+/* ============================================================
+ * Theme palettes
+ *
+ * Each block defines the full set of --app-* tokens Tailwind
+ * utilities (bg-primary, text-foreground, …) resolve against.
+ * A few tokens are structural, not just color:
+ *   --app-font-body       → font stack on <body>
+ *   --app-primary-bg      → background-image for .bg-primary
+ *                           (used by Partiful for a gradient)
+ *   --app-accent          → secondary highlight color
+ * ============================================================ */
+
+
+/* ----- Theme 1 · Strava (default, "Midnight Lime") --------
+ * Performance / athletic: deep black, neon-lime primary, fills.
+ * ---------------------------------------------------------- */
 :root,
-:root[data-theme="dark-lime"] {
+:root[data-theme="strava"] {
   --app-bg: #0A0A0A;
   --app-fg: #EDEDED;
   --app-primary: #96FE17;
   --app-primary-dark: #7AD612;
   --app-primary-on: #0A0A0A;
+  --app-accent: #FF5A1F;
   --app-surface: #1A1A1A;
   --app-surface-light: #252525;
   --app-muted: #888888;
   --app-border: #2A2A2A;
+  --app-font-body: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   color-scheme: dark;
 }
 
-/* ----- Dark · Court Blue -------------------------------------------- */
-:root[data-theme="dark-blue"] {
-  --app-bg: #0A1020;
-  --app-fg: #E7EEF9;
-  --app-primary: #60A5FA;
-  --app-primary-dark: #2563EB;
-  --app-primary-on: #08102A;
-  --app-surface: #141B2E;
-  --app-surface-light: #1E2744;
-  --app-muted: #7C8CA8;
-  --app-border: #253049;
+/* ----- Theme 2 · Nike (editorial, brutalist) -----------------
+ * Pure-black canvas, Volt + Hyper-Orange accents, oversized
+ * display type with heavy caps + tight tracking, slab buttons.
+ * ---------------------------------------------------------- */
+:root[data-theme="nike"] {
+  --app-bg: #000000;
+  --app-fg: #FFFFFF;
+  --app-primary: #CEFF00;
+  --app-primary-dark: #A8D400;
+  --app-primary-on: #000000;
+  --app-accent: #FF5A1F;
+  --app-surface: #0D0D0D;
+  --app-surface-light: #161616;
+  --app-muted: #8A8A8A;
+  --app-border: #1F1F1F;
+  --app-font-body: var(--font-geist-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   color-scheme: dark;
 }
 
-/* ----- Dark · Ember (sunset court) ---------------------------------- */
-:root[data-theme="dark-ember"] {
-  --app-bg: #140D08;
-  --app-fg: #F4EBE2;
-  --app-primary: #FB923C;
-  --app-primary-dark: #EA580C;
-  --app-primary-on: #1B0F06;
-  --app-surface: #1E1711;
-  --app-surface-light: #2A221B;
-  --app-muted: #8E8072;
-  --app-border: #332A22;
+/* Nike · structural tweaks — hard corners on primary surfaces
+ * and uppercase + tight tracking on major headings. */
+:root[data-theme="nike"] h1,
+:root[data-theme="nike"] h2 {
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 800;
+}
+:root[data-theme="nike"] .bg-primary,
+:root[data-theme="nike"] button.bg-primary {
+  border-radius: 4px !important;
+}
+:root[data-theme="nike"] .rounded-2xl {
+  border-radius: 8px;
+}
+:root[data-theme="nike"] .rounded-xl {
+  border-radius: 6px;
+}
+
+/* ----- Theme 3 · Partiful (playful social) -------------------
+ * Warm plum canvas, hot-pink → tangerine gradient primary,
+ * generous rounding, emoji-friendly feel.
+ * ---------------------------------------------------------- */
+:root[data-theme="partiful"] {
+  --app-bg: #1A0E23;
+  --app-fg: #F8E9F4;
+  --app-primary: #FF4D8F;
+  --app-primary-dark: #E02F73;
+  --app-primary-on: #1A0E23;
+  --app-accent: #FFB547;
+  --app-surface: #2A1A36;
+  --app-surface-light: #3A2647;
+  --app-muted: #B19BC4;
+  --app-border: #3A2647;
+  --app-font-body: var(--font-geist-sans), "Segoe UI Emoji", system-ui, sans-serif;
   color-scheme: dark;
 }
 
-/* ----- Dark · Violet Rally ------------------------------------------ */
-:root[data-theme="dark-violet"] {
-  --app-bg: #100B1C;
-  --app-fg: #EDE6F7;
-  --app-primary: #E879F9;
-  --app-primary-dark: #C026D3;
-  --app-primary-on: #1A0F27;
-  --app-surface: #1A142A;
-  --app-surface-light: #261D3E;
-  --app-muted: #8E82A6;
-  --app-border: #2E2748;
+/* Partiful · gradient primary buttons + softer rounding. */
+:root[data-theme="partiful"] .bg-primary {
+  background-image: linear-gradient(135deg, #FF4D8F 0%, #FF8A3D 100%);
+}
+:root[data-theme="partiful"] .rounded-2xl {
+  border-radius: 24px;
+}
+:root[data-theme="partiful"] .rounded-xl {
+  border-radius: 18px;
+}
+
+/* ----- Theme 4 · Apple Fitness+ (calm iOS-native) -----------
+ * Jet-black canvas, iOS-green primary, system font, iOS-like
+ * neutral greys for surfaces and separators.
+ * ---------------------------------------------------------- */
+:root[data-theme="apple-fitness"] {
+  --app-bg: #000000;
+  --app-fg: #FFFFFF;
+  --app-primary: #32D74B;
+  --app-primary-dark: #28A745;
+  --app-primary-on: #000000;
+  --app-accent: #0A84FF;
+  --app-surface: #1C1C1E;
+  --app-surface-light: #2C2C2E;
+  --app-muted: #8E8E93;
+  --app-border: #38383A;
+  --app-font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
   color-scheme: dark;
 }
 
-/* ----- Light · Daylight (clean + forest green) ---------------------- */
-:root[data-theme="light-daylight"] {
-  --app-bg: #FFFFFF;
-  --app-fg: #0F172A;
-  --app-primary: #16A34A;
-  --app-primary-dark: #15803D;
+/* Apple Fitness · slightly tighter tracking + iOS-ish rounding. */
+:root[data-theme="apple-fitness"] h1,
+:root[data-theme="apple-fitness"] h2 {
+  letter-spacing: -0.015em;
+}
+:root[data-theme="apple-fitness"] .rounded-2xl {
+  border-radius: 14px;
+}
+
+/* ----- Theme 5 · Playtomic (court-native sporty light) ------
+ * Off-white canvas, tennis-green primary, clay-orange accent.
+ * ---------------------------------------------------------- */
+:root[data-theme="playtomic"] {
+  --app-bg: #F6F7F4;
+  --app-fg: #0A1F17;
+  --app-primary: #1E8E3E;
+  --app-primary-dark: #0E6B2B;
   --app-primary-on: #FFFFFF;
-  --app-surface: #F4F6FA;
-  --app-surface-light: #E9EDF3;
-  --app-muted: #64748B;
-  --app-border: #DCE1E8;
-  color-scheme: light;
-}
-
-/* ----- Light · Paper (cream + navy) --------------------------------- */
-:root[data-theme="light-paper"] {
-  --app-bg: #FAF7F2;
-  --app-fg: #1F2937;
-  --app-primary: #1D4ED8;
-  --app-primary-dark: #1E40AF;
-  --app-primary-on: #FFFFFF;
-  --app-surface: #F2EEE6;
-  --app-surface-light: #EAE4D8;
-  --app-muted: #8C8678;
-  --app-border: #D8D1C1;
-  color-scheme: light;
-}
-
-/* ----- Light · Coral (peach + terracotta) --------------------------- */
-:root[data-theme="light-coral"] {
-  --app-bg: #FFF6F0;
-  --app-fg: #3F1D07;
-  --app-primary: #EA580C;
-  --app-primary-dark: #C2410C;
-  --app-primary-on: #FFFFFF;
-  --app-surface: #FDEBDF;
-  --app-surface-light: #F7D9C5;
-  --app-muted: #8C6A55;
-  --app-border: #EFC3A6;
+  --app-accent: #E06B2A;
+  --app-surface: #FFFFFF;
+  --app-surface-light: #E8F0E8;
+  --app-muted: #6B7A6F;
+  --app-border: #D6DED8;
+  --app-font-body: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   color-scheme: light;
 }
 
@@ -131,7 +180,7 @@ html {
 body {
   background: var(--app-bg);
   color: var(--app-fg);
-  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  font-family: var(--app-font-body, var(--font-geist-sans), system-ui, sans-serif);
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
