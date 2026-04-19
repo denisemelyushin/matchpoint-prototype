@@ -112,7 +112,6 @@ export function AuthModal() {
         className="absolute inset-0 bg-black/70 cursor-default"
       />
       <div className="relative w-full max-w-[480px] bg-surface rounded-t-3xl sm:rounded-3xl border border-border/60 p-6 pb-8 shadow-2xl">
-        <div className="mx-auto w-10 h-1 rounded-full bg-foreground/20 mb-4 sm:hidden" />
         <button
           type="button"
           aria-label="Close"
