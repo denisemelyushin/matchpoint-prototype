@@ -26,7 +26,7 @@ A mobile-first web app prototype for connecting pickleball players. This documen
 
 ## 3. Global Behavior
 
-- **Welcome** and **Onboarding** screens must **not scroll vertically** and must **not trigger pull-to-refresh** or rubber-band overscroll.
+- The **Onboarding** flow (which now includes the branded welcome slide as its first step) must **not scroll vertically** and must **not trigger pull-to-refresh** or rubber-band overscroll.
 - Main app screens (Feed, Games, Players, Chats, and all sub-screens) may scroll vertically but must suppress pull-to-refresh.
 - App data (profile, posts, comments, likes, games, chats, messages) lives in **Firestore** and is streamed into a single React context via real-time subscriptions; UI-only preferences (theme, app-bar / menu-profile / tab-bar variants) remain in `localStorage`.
 - **All absolute dates and times are rendered in the viewer's local timezone.** A game scheduled for 6:00 PM Pacific appears as `6:00 PM` for a viewer in PT and `9:00 PM` for a viewer in ET — the stored moment is the same, only the wall-clock presentation differs. `Today / Yesterday / Tomorrow` boundaries, chat day separators, and game filters all follow the viewer's local calendar day.
@@ -46,21 +46,25 @@ A mobile-first web app prototype for connecting pickleball players. This documen
 
 ---
 
-## 4. Welcome Screen (`/`)
+## 4. Root redirect (`/`)
 
-- First screen shown when a user opens the app.
-- Contains:
-  - App **logo** (transparent PNG).
-  - **Tagline** below the logo.
-  - **Get Started** button near the bottom.
-- Tapping **Get Started** moves the user to the onboarding flow.
+The root route renders nothing visible — it's a thin auth-gate redirect:
+
+- Signed-in users are forwarded to **`/feed`**.
+- Guests (including users who just signed out or deleted their account) are forwarded to **`/onboarding`**.
+
+There is no standalone welcome page anymore; the branded welcome content now lives as the first slide of the onboarding flow (see §5).
 
 ## 5. Onboarding Flow (`/onboarding`)
 
-- Five sequential screens; each contains an **icon**, **title**, **description**, and a **Next** button.
-- The **Next** button sits near the bottom of the screen, in the same vertical position as **Get Started** on the Welcome screen.
-- **Step indicator dots** appear above the Next button, showing progress; tapping a dot jumps directly to that step.
-- **Swipe gestures** are supported on every onboarding screen:
+A six-slide horizontal carousel. The first slide is the branded **welcome** screen (logo + tagline + **Get Started** CTA); the remaining five slides introduce features.
+
+- The primary CTA button sits near the bottom of the screen in a fixed position across all slides. Its label is:
+  - **Get Started** on the welcome slide (step 0),
+  - **Next** on steps 1–4,
+  - **Let's Go!** on the final step.
+- **Step indicator dots** appear above the button, showing progress across all six slides; tapping a dot jumps directly to that step.
+- **Swipe gestures** are supported on every slide (including the welcome slide):
   - Drag left → go to the next step.
   - Drag right → go to the previous step.
   - Live finger-follow with rubber-band resistance at the first and last steps.
@@ -68,10 +72,11 @@ A mobile-first web app prototype for connecting pickleball players. This documen
 - No **Skip** button.
 - After the final step, the user lands on the **Feed** tab.
 
-**Onboarding screen content:**
+**Onboarding slide content:**
 
 | # | Title | Description |
 |---|---|---|
+| 0 | (welcome slide) | Logo + tagline: "Find courts. Play games. Connect with players." |
 | 1 | Find Courts Near You | Discover nearby pickleball courts and see where others are playing. |
 | 2 | Schedule & Join Games | Create games or join open matches in your area. |
 | 3 | Stay Connected with Players | Message players and coordinate games easily. |
@@ -109,7 +114,7 @@ Menu contents, from top to bottom:
 2. **Settings** link — opens the Settings screen (see §16).
 3. **Privacy Policy** link (opens a page).
 4. **Terms of Use** link (opens a page).
-5. **Log Out** button — returns the user to the Welcome screen.
+5. **Log Out** button — signs the user out and returns them to the onboarding flow (which opens on the branded welcome slide).
 
 ---
 
@@ -135,7 +140,7 @@ User can edit:
 
 Header has a **Save** action that persists changes and returns to the previous screen.
 
-At the bottom of the screen, below a separator, there is a subtle **Delete account** text link. It is intentionally low-contrast (muted grey, no background, no icon) — it only picks up a soft rose tint on press. Tapping it opens the in-app confirmation dialog ("Delete your account?" with a destructive "Delete account" button). On confirm a second in-app dialog asks the user to re-enter their password — this is required so the deletion is always authorised with a fresh credential regardless of how long the session has been open. On submit we reauthenticate, then run a client-side purge that deletes every document the user owns or participates in (profile, posts and their comments + likes, hosted games, chats and their messages) and removes the user from any game they were merely a player in, then delete the Firebase Auth record. The user is then returned to the Welcome screen. Wrong passwords surface inline in the dialog without closing it. (When the app later moves to the Blaze plan, this client-side purge is intended to be replaced with an `onDelete` Cloud Function or the `firebase/delete-user-data` extension.)
+At the bottom of the screen, below a separator, there is a subtle **Delete account** text link. It is intentionally low-contrast (muted grey, no background, no icon) — it only picks up a soft rose tint on press. Tapping it opens the in-app confirmation dialog ("Delete your account?" with a destructive "Delete account" button). On confirm a second in-app dialog asks the user to re-enter their password — this is required so the deletion is always authorised with a fresh credential regardless of how long the session has been open. On submit we reauthenticate, then run a client-side purge that deletes every document the user owns or participates in (profile, posts and their comments + likes, hosted games, chats and their messages) and removes the user from any game they were merely a player in, then delete the Firebase Auth record. The user is then returned to the onboarding flow (which opens on the branded welcome slide). Wrong passwords surface inline in the dialog without closing it. (When the app later moves to the Blaze plan, this client-side purge is intended to be replaced with an `onDelete` Cloud Function or the `firebase/delete-user-data` extension.)
 
 ---
 

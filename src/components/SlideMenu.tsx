@@ -40,7 +40,9 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
     } catch (err) {
       console.error("[menu] sign out failed:", err);
     }
-    router.push("/feed");
+    // After signing out, land the user on the welcome/onboarding flow
+    // (the first onboarding slide is the branded welcome screen).
+    router.replace("/onboarding");
   };
 
   const handleSignIn = () => {

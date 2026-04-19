@@ -5,8 +5,10 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type ComponentType,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   MapPinIcon,
@@ -16,30 +18,51 @@ import {
   UserIcon,
 } from "@/components/icons";
 
-const STEPS = [
+type OnboardingIconProps = { size?: number; color?: string };
+
+// The onboarding carousel opens on a branded welcome slide (logo + tagline),
+// then walks through the feature intro cards. The welcome slide replaces
+// the old standalone "/" page — it's step 0 here so users can swipe
+// straight into the feature tour, or tap "Get Started" to advance.
+type WelcomeStep = { kind: "welcome" };
+type FeatureStep = {
+  kind: "feature";
+  icon: ComponentType<OnboardingIconProps>;
+  title: string;
+  description: string;
+};
+type Step = WelcomeStep | FeatureStep;
+
+const STEPS: Step[] = [
+  { kind: "welcome" },
   {
+    kind: "feature",
     icon: MapPinIcon,
     title: "Find Courts Near You",
     description:
       "Discover nearby pickleball courts and see where others are playing.",
   },
   {
+    kind: "feature",
     icon: CalendarIcon,
     title: "Schedule & Join Games",
     description: "Create games or join open matches in your area.",
   },
   {
+    kind: "feature",
     icon: MessageCircleIcon,
     title: "Stay Connected with Players",
     description: "Message players and coordinate games easily.",
   },
   {
+    kind: "feature",
     icon: ShareIcon,
     title: "Share the Game",
     description:
       "Post your games and see your friends playing on the social feed.",
   },
   {
+    kind: "feature",
     icon: UserIcon,
     title: "Let's Get You on the Court!",
     description: "Create your profile.",
@@ -133,7 +156,9 @@ export default function OnboardingPage() {
   };
 
   const translatePx = -currentStep * frameWidth + dragOffset;
+  const isFirst = currentStep === 0;
   const isLast = currentStep === STEPS.length - 1;
+  const ctaLabel = isFirst ? "Get Started" : isLast ? "Let's Go!" : "Next";
 
   return (
     <div className="flex flex-col h-full overflow-hidden overscroll-none bg-background">
@@ -156,26 +181,41 @@ export default function OnboardingPage() {
             transform: `translate3d(${translatePx}px, 0, 0)`,
           }}
         >
-          {STEPS.map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <div
-                key={i}
-                className="h-full shrink-0 flex flex-col items-center justify-center px-8"
-                style={{ width: frameWidth || undefined }}
-              >
-                <div className="w-28 h-28 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-                  <Icon size={56} color="var(--color-primary)" />
-                </div>
-                <h2 className="text-2xl font-bold text-foreground text-center leading-tight mb-3">
-                  {s.title}
-                </h2>
-                <p className="text-muted text-center text-base max-w-[280px] leading-relaxed">
-                  {s.description}
-                </p>
-              </div>
-            );
-          })}
+          {STEPS.map((s, i) => (
+            <div
+              key={i}
+              className="h-full shrink-0 flex flex-col items-center justify-center px-8"
+              style={{ width: frameWidth || undefined }}
+            >
+              {s.kind === "welcome" ? (
+                <>
+                  <Image
+                    src="/logo.png"
+                    alt="Matchpoint"
+                    width={320}
+                    height={213}
+                    priority
+                    className="w-[280px] h-auto max-w-full"
+                  />
+                  <p className="text-muted text-center text-base max-w-[260px] mt-5">
+                    Find courts. Play games. Connect with players.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="w-28 h-28 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                    <s.icon size={56} color="var(--color-primary)" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-foreground text-center leading-tight mb-3">
+                    {s.title}
+                  </h2>
+                  <p className="text-muted text-center text-base max-w-[280px] leading-relaxed">
+                    {s.description}
+                  </p>
+                </>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -202,7 +242,7 @@ export default function OnboardingPage() {
           onClick={handleNext}
           className="w-full max-w-[320px] mx-auto block py-4 rounded-2xl bg-primary text-[var(--app-primary-on)] font-semibold text-lg active:scale-[0.97] transition-transform"
         >
-          {isLast ? "Let's Go!" : "Next"}
+          {ctaLabel}
         </button>
       </div>
     </div>
