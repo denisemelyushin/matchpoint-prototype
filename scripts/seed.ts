@@ -20,8 +20,24 @@ const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
+// Midnight *local time* of the day the seed runs. Used so game timestamps
+// can be expressed as `dayAt(dayOffset, hourOfDay)` and always land on the
+// intended calendar day, regardless of what hour the seed script is invoked.
+const SEED_TODAY = new Date(SEED_NOW);
+const START_OF_TODAY_MS = new Date(
+  SEED_TODAY.getFullYear(),
+  SEED_TODAY.getMonth(),
+  SEED_TODAY.getDate()
+).getTime();
+
 function ts(offsetMs: number): Timestamp {
   return Timestamp.fromMillis(SEED_NOW + offsetMs);
+}
+
+/** Offset (from SEED_NOW) that lands on `dayOffset` days from today at the
+ *  given wall-clock hour in local time. */
+function dayAt(dayOffset: number, hour: number): number {
+  return START_OF_TODAY_MS + dayOffset * DAY + hour * HOUR - SEED_NOW;
 }
 
 function initialsFromName(name: string): string {
@@ -248,12 +264,17 @@ interface SeedGame {
   createdOffsetMs: number;
 }
 
+// A handful of games spread across the next 7 calendar days at realistic
+// wall-clock times. Multiple games per day give the Games tab enough to
+// show interesting filtering (Today / Tomorrow / This weekend / Upcoming)
+// without looking empty.
 const GAMES: SeedGame[] = [
+  // +1 day
   {
-    id: "g_1",
+    id: "g_1a",
     userId: "u_er",
     court: "Sunset Park",
-    dateOffsetMs: DAY,
+    dateOffsetMs: dayAt(1, 9),
     minSkill: "Beginner",
     maxPlayers: 8,
     notes: "Casual morning session, all levels welcome.",
@@ -262,10 +283,46 @@ const GAMES: SeedGame[] = [
     createdOffsetMs: -5 * HOUR,
   },
   {
-    id: "g_2",
+    id: "g_1b",
+    userId: "u_mj",
+    court: "Riverside Courts",
+    dateOffsetMs: dayAt(1, 18),
+    minSkill: "Intermediate",
+    maxPlayers: 4,
+    notes: "After-work doubles. Lights on until 9.",
+    isPrivate: false,
+    playerIds: ["u_mj", "u_jw"],
+    createdOffsetMs: -4 * HOUR,
+  },
+  // +2 days
+  {
+    id: "g_2a",
+    userId: "u_tb",
+    court: "Sunset Park",
+    dateOffsetMs: dayAt(2, 7),
+    minSkill: "Beginner",
+    maxPlayers: 4,
+    notes: "6 AM crew — bring coffee.",
+    isPrivate: false,
+    playerIds: ["u_tb", "u_rp"],
+    createdOffsetMs: -7 * HOUR,
+  },
+  {
+    id: "g_2b",
+    userId: "u_jw",
+    court: "Downtown Pickleball Center",
+    dateOffsetMs: dayAt(2, 13),
+    minSkill: "Intermediate",
+    maxPlayers: 4,
+    isPrivate: false,
+    playerIds: ["u_jw"],
+    createdOffsetMs: -6 * HOUR,
+  },
+  {
+    id: "g_2c",
     userId: "u_dk",
     court: "Lakeview Recreation Center",
-    dateOffsetMs: 2 * DAY,
+    dateOffsetMs: dayAt(2, 17),
     minSkill: "Advanced",
     maxPlayers: 4,
     notes: "Competitive doubles. Bring your A-game.",
@@ -273,11 +330,12 @@ const GAMES: SeedGame[] = [
     playerIds: ["u_dk", "u_sc"],
     createdOffsetMs: -3 * HOUR,
   },
+  // +3 days
   {
-    id: "g_3",
+    id: "g_3a",
     userId: "u_mj",
     court: "Downtown Pickleball Center",
-    dateOffsetMs: 3 * DAY,
+    dateOffsetMs: dayAt(3, 18),
     minSkill: "Intermediate",
     maxPlayers: 4,
     isPrivate: false,
@@ -285,16 +343,114 @@ const GAMES: SeedGame[] = [
     createdOffsetMs: -DAY,
   },
   {
-    id: "g_4",
+    id: "g_3b",
+    userId: "u_sc",
+    court: "Community Sports Complex",
+    dateOffsetMs: dayAt(3, 20),
+    minSkill: "Pro",
+    maxPlayers: 4,
+    notes: "4.5+ drill night.",
+    isPrivate: false,
+    playerIds: ["u_sc", "u_dk"],
+    createdOffsetMs: -DAY - 2 * HOUR,
+  },
+  // +4 days
+  {
+    id: "g_4a",
+    userId: "u_er",
+    court: "Lakeview Recreation Center",
+    dateOffsetMs: dayAt(4, 10),
+    minSkill: "Advanced",
+    maxPlayers: 4,
+    isPrivate: false,
+    playerIds: ["u_er", "u_sc"],
+    createdOffsetMs: -DAY - 4 * HOUR,
+  },
+  {
+    id: "g_4b",
     userId: "u_at",
     court: "Community Sports Complex",
-    dateOffsetMs: 4 * DAY,
+    dateOffsetMs: dayAt(4, 19),
     minSkill: "Intermediate",
     maxPlayers: 4,
     notes: "Paddle demo afterwards!",
     isPrivate: false,
     playerIds: ["u_at", "u_mj", "u_jw", "u_rp"],
     createdOffsetMs: -2 * DAY,
+  },
+  // +5 days
+  {
+    id: "g_5a",
+    userId: "u_rp",
+    court: "Riverside Courts",
+    dateOffsetMs: dayAt(5, 9),
+    minSkill: "Intermediate",
+    maxPlayers: 4,
+    notes: "Weekend social. Round robin.",
+    isPrivate: false,
+    playerIds: ["u_rp", "u_mj"],
+    createdOffsetMs: -2 * DAY,
+  },
+  {
+    id: "g_5b",
+    userId: "u_tb",
+    court: "Sunset Park",
+    dateOffsetMs: dayAt(5, 15),
+    minSkill: "Beginner",
+    maxPlayers: 8,
+    notes: "Afternoon open play.",
+    isPrivate: false,
+    playerIds: ["u_tb", "u_er"],
+    createdOffsetMs: -2 * DAY - 3 * HOUR,
+  },
+  // +6 days
+  {
+    id: "g_6a",
+    userId: "u_sc",
+    court: "Lakeview Recreation Center",
+    dateOffsetMs: dayAt(6, 8),
+    minSkill: "Advanced",
+    maxPlayers: 4,
+    notes: "Weekend sweat session.",
+    isPrivate: false,
+    playerIds: ["u_sc", "u_jw", "u_dk"],
+    createdOffsetMs: -3 * DAY,
+  },
+  {
+    id: "g_6b",
+    userId: "u_at",
+    court: "Community Sports Complex",
+    dateOffsetMs: dayAt(6, 16),
+    minSkill: "Intermediate",
+    maxPlayers: 4,
+    isPrivate: false,
+    playerIds: ["u_at", "u_rp"],
+    createdOffsetMs: -3 * DAY - 2 * HOUR,
+  },
+  // +7 days
+  {
+    id: "g_7a",
+    userId: "u_er",
+    court: "Riverside Courts",
+    dateOffsetMs: dayAt(7, 7),
+    minSkill: "Beginner",
+    maxPlayers: 8,
+    notes: "Early birds welcome.",
+    isPrivate: false,
+    playerIds: ["u_er", "u_tb"],
+    createdOffsetMs: -4 * DAY,
+  },
+  {
+    id: "g_7b",
+    userId: "u_dk",
+    court: "Downtown Pickleball Center",
+    dateOffsetMs: dayAt(7, 19),
+    minSkill: "Pro",
+    maxPlayers: 4,
+    notes: "Hot-sauce night — drills + games.",
+    isPrivate: false,
+    playerIds: ["u_dk"],
+    createdOffsetMs: -4 * DAY - 2 * HOUR,
   },
 ];
 
