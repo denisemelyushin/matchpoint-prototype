@@ -51,7 +51,7 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
   return (
     <aside
       aria-hidden={!isOpen}
-      className="absolute top-0 left-0 bottom-0 z-0 w-[320px] flex flex-col pt-12 bg-background"
+      className="absolute top-0 left-0 bottom-0 z-0 w-[300px] flex flex-col pt-12 bg-background"
     >
       <div className="px-5">
         {currentUser ? (

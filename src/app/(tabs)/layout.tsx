@@ -84,7 +84,7 @@ export default function TabsLayout({ children }: { children: ReactNode }) {
       <div
         className="absolute inset-0 z-10 flex flex-col bg-background transition-transform duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] will-change-transform"
         style={{
-          transform: menuOpen ? "translateX(320px)" : "translateX(0)",
+          transform: menuOpen ? "translateX(300px)" : "translateX(0)",
           boxShadow: menuOpen
             ? "-8px 0 24px -8px rgba(0,0,0,0.6), -2px 0 6px -2px rgba(0,0,0,0.5)"
             : "0 0 0 0 rgba(0,0,0,0)",

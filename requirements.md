@@ -94,11 +94,11 @@ The main app has a persistent layout:
 
 ## 7. Slide Menu
 
-Uses an **underlay drawer** pattern (iOS-style side drawer): the menu and the main app shell sit on separate layers inside the 480px mobile frame. The menu is stationary, anchored to the left edge of the frame on a lower layer. The main shell sits on a higher layer and slides to the **right** by the menu's width (320px) to reveal the menu underneath.
+Uses an **underlay drawer** pattern (iOS-style side drawer): the menu and the main app shell sit on separate layers inside the 480px mobile frame. The menu is stationary, anchored to the left edge of the frame on a lower layer. The main shell sits on a higher layer and slides to the **right** by the menu's width (300px) to reveal the menu underneath.
 
 Open / close behavior:
 
-- Open: triggered by the top-left Menu button. Over ~400ms with a smooth easing curve, the main app shell translates 320px to the right (revealing the menu beneath) and picks up a soft shadow on its left edge. Its right portion is clipped by the phone frame, leaving a narrow peek of main content. The menu itself does not animate — it is already in place underneath.
+- Open: triggered by the top-left Menu button. Over ~400ms with a smooth easing curve, the main app shell translates 300px to the right (revealing the menu beneath) and picks up a soft shadow on its left edge. Its right portion is clipped by the phone frame, leaving a narrow peek of main content. The menu itself does not animate — it is already in place underneath.
 - Close: tapping anywhere on the offset main content, or pressing **Escape**, slides the main shell back into place, hiding the menu again.
 - There is no visible scrim and no explicit close button — the offset main content itself is the tap-to-close affordance.
 
