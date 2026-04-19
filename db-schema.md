@@ -152,13 +152,13 @@ The live rules live in `firestore.rules` and are deployed to the project via `np
 
 Current policy:
 
-- **`users/{userId}`** — public read (guest-friendly); only the owner can create / update. Deletes disabled.
+- **`users/{userId}`** — public read (guest-friendly); only the owner can create / update / delete (delete is used by the account-purge flow that runs before Firebase Auth `deleteUser()`).
 - **`posts/{postId}`** — public read (the `isPrivate` flag is enforced as a client-side display filter only; Firestore list queries can't evaluate doc-field-dependent rules cleanly in a prototype). Create / delete only by author; updates by author or by any signed-in user changing only the denormalised `likeCount` / `commentCount`.
-  - **`comments`**: public read; create by any signed-in user with `userId == request.auth.uid`; delete by the comment author only. Also reachable via a collection-group rule (`match /{path=**}/comments/{commentId}`).
-  - **`likes/{userId}`**: public read; create / delete only by `userId == request.auth.uid`. Also reachable via a collection-group rule (`match /{path=**}/likes/{likeId}`).
+  - **`comments`**: public read; create by any signed-in user with `userId == request.auth.uid`; delete by the comment author OR the post author (the latter lets the account-purge tear down a post's subcollection before deleting the post itself). Also reachable via a collection-group rule (`match /{path=**}/comments/{commentId}`).
+  - **`likes/{userId}`**: public read; create only by the liking user (`isSelf(userId)`); delete by the liking user OR the post author. Also reachable via a collection-group rule (`match /{path=**}/likes/{likeId}`).
 - **`games/{gameId}`** — public read (privacy is client-side for the prototype). Create by host with `userId == request.auth.uid`. Updates restricted to the host OR a valid self-join / self-leave on `playerIds` + `playerCount` that respects `maxPlayers`.
-- **`chats/{chatId}`** — read / write only for users whose uid is in `participantIds`. On create, the caller must be one of the two participants. Deletes disabled.
-- **`chats/{chatId}/messages/{messageId}`** — read / create only for chat participants; `senderId` must equal `request.auth.uid`. Edits / deletes not permitted from the client.
+- **`chats/{chatId}`** — read / write only for users whose uid is in `participantIds`. On create, the caller must be one of the two participants. A participant may also delete the chat (used by the account-purge; the messages subcollection must be cleared client-side first).
+- **`chats/{chatId}/messages/{messageId}`** — read / create only for chat participants; `senderId` must equal `request.auth.uid`. Updates are never permitted. Deletes are permitted for any participant (only used by the account-purge to clear the subcollection before the parent chat doc is removed).
 
 ---
 

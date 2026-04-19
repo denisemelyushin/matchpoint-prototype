@@ -30,7 +30,9 @@ service cloud.firestore {
                     && request.resource.data.name is string
                     && request.resource.data.email is string;
       allow update: if isSelf(userId);
-      allow delete: if false;
+      // Owner can delete their own profile as part of the account-deletion
+      // purge (client-side cleanup before Firebase Auth `deleteUser()`).
+      allow delete: if isSelf(userId);
     }
 
     // ---- posts ----------------------------------------------------------
@@ -63,8 +65,15 @@ service cloud.firestore {
                       && request.resource.data.content is string
                       && request.resource.data.content.size() > 0;
         allow update: if false;
+        // Author can delete their own comment. The post author can also
+        // delete any comment on their post (needed for the account-purge
+        // to tear down a post's subcollection before deleting the post).
         allow delete: if isSignedIn()
-                      && resource.data.userId == request.auth.uid;
+                      && (
+                        resource.data.userId == request.auth.uid
+                        || get(/databases/$(database)/documents/posts/$(postId))
+                             .data.userId == request.auth.uid
+                      );
       }
 
       match /likes/{userId} {
@@ -74,7 +83,14 @@ service cloud.firestore {
         // filter by it.
         allow create: if isSelf(userId)
                       && request.resource.data.userId == userId;
-        allow delete: if isSelf(userId);
+        // Liking user can unlike; post author can also clear likes when
+        // tearing down their post during account deletion.
+        allow delete: if isSelf(userId)
+                      || (
+                        isSignedIn()
+                        && get(/databases/$(database)/documents/posts/$(postId))
+                             .data.userId == request.auth.uid
+                      );
         allow update: if false;
       }
     }
@@ -121,7 +137,11 @@ service cloud.firestore {
       allow update: if isSignedIn()
                     && request.auth.uid in resource.data.participantIds;
 
-      allow delete: if false;
+      // A participant can delete the whole chat as part of the account-
+      // deletion purge. The messages subcollection must be cleared by the
+      // client before this delete runs (Firestore doesn't cascade).
+      allow delete: if isSignedIn()
+                    && request.auth.uid in resource.data.participantIds;
 
       match /messages/{messageId} {
         allow read: if isSignedIn()
@@ -134,7 +154,12 @@ service cloud.firestore {
                       && request.resource.data.content is string
                       && request.resource.data.content.size() > 0;
         allow update: if false;
-        allow delete: if false;
+        // Only permitted during the account-purge: a chat participant may
+        // delete any message in the chat so the subcollection can be
+        // cleared before the chat doc itself is removed.
+        allow delete: if isSignedIn()
+                      && request.auth.uid in
+                         get(/databases/$(database)/documents/chats/$(chatId)).data.participantIds;
       }
     }
 

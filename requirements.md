@@ -135,7 +135,7 @@ User can edit:
 
 Header has a **Save** action that persists changes and returns to the previous screen.
 
-At the bottom of the screen, below a separator, there is a subtle **Delete account** text link. It is intentionally low-contrast (muted grey, no background, no icon) — it only picks up a soft rose tint on press. Tapping it opens a confirmation dialog; on confirm the user is returned to the Welcome screen.
+At the bottom of the screen, below a separator, there is a subtle **Delete account** text link. It is intentionally low-contrast (muted grey, no background, no icon) — it only picks up a soft rose tint on press. Tapping it opens the in-app confirmation dialog ("Delete your account?" with a destructive "Delete account" button). On confirm a second in-app dialog asks the user to re-enter their password — this is required so the deletion is always authorised with a fresh credential regardless of how long the session has been open. On submit we reauthenticate, then run a client-side purge that deletes every document the user owns or participates in (profile, posts and their comments + likes, hosted games, chats and their messages) and removes the user from any game they were merely a player in, then delete the Firebase Auth record. The user is then returned to the Welcome screen. Wrong passwords surface inline in the dialog without closing it. (When the app later moves to the Blaze plan, this client-side purge is intended to be replaced with an `onDelete` Cloud Function or the `firebase/delete-user-data` extension.)
 
 ---
 

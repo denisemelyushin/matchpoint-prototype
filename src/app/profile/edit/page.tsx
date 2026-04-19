@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/app-store";
-import { useRequireAuthPage } from "@/lib/auth";
+import { useAuth, useRequireAuthPage } from "@/lib/auth";
 import { AppHeader } from "@/components/AppHeader";
 import { Avatar } from "@/components/Avatar";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import {
   FieldLabel,
   Select,
@@ -30,6 +31,7 @@ export default function EditProfilePage() {
 function EditProfileForm({ currentUser }: { currentUser: User }) {
   const router = useRouter();
   const { updateProfile } = useAppStore();
+  const { deleteAccount, currentUserId } = useAuth();
 
   const [name, setName] = useState(currentUser.name);
   const [bio, setBio] = useState(currentUser.bio);
@@ -38,7 +40,26 @@ function EditProfileForm({ currentUser }: { currentUser: User }) {
   );
   const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [pendingWelcomeRedirect, setPendingWelcomeRedirect] = useState(false);
+  // When Firebase demands a fresh sign-in for deletion, we open a password
+  // prompt so the user can reauthenticate and delete in one step (rather
+  // than being silently signed out and losing context).
+  const [reauthPromptOpen, setReauthPromptOpen] = useState(false);
+  const [reauthPassword, setReauthPassword] = useState("");
+  const [reauthError, setReauthError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // After a successful account deletion we need to wait for the auth
+  // listener to clear `currentUserId` before navigating — otherwise the
+  // welcome page still sees a signed-in user and bounces us to /feed.
+  useEffect(() => {
+    if (pendingWelcomeRedirect && !currentUserId) {
+      router.replace("/");
+    }
+  }, [pendingWelcomeRedirect, currentUserId, router]);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -73,12 +94,65 @@ function EditProfileForm({ currentUser }: { currentUser: User }) {
   };
 
   const handleDeleteAccount = () => {
-    if (
-      confirm(
-        "Are you sure you want to delete your account? This action cannot be undone."
-      )
-    ) {
-      router.push("/");
+    setDeleteError(null);
+    setConfirmDeleteOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleting) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteAccount();
+      setConfirmDeleteOpen(false);
+      // Defer navigation until the auth listener clears currentUserId so
+      // the welcome page doesn't redirect us back to /feed on a stale
+      // auth state.
+      setPendingWelcomeRedirect(true);
+    } catch (err) {
+      if (err instanceof Error && err.message === "requires-recent-login") {
+        // Firebase won't delete the user without a fresh sign-in. Prompt
+        // for password and retry — in one flow, rather than signing them
+        // out and hoping they figure it out.
+        setConfirmDeleteOpen(false);
+        setReauthPassword("");
+        setReauthError(null);
+        setReauthPromptOpen(true);
+        setDeleting(false);
+        return;
+      }
+      console.error("[profile/edit] failed to delete account:", err);
+      setDeleteError("Couldn't delete your account. Please try again.");
+      setDeleting(false);
+    }
+  };
+
+  const handleReauthAndDelete = async () => {
+    if (deleting) return;
+    const pwd = reauthPassword;
+    if (!pwd) {
+      setReauthError("Please enter your password.");
+      return;
+    }
+    setDeleting(true);
+    setReauthError(null);
+    try {
+      await deleteAccount(pwd);
+      setReauthPromptOpen(false);
+      setReauthPassword("");
+      setPendingWelcomeRedirect(true);
+    } catch (err) {
+      if (err instanceof Error && err.message === "wrong-password") {
+        setReauthError("Incorrect password. Please try again.");
+      } else if (err instanceof Error && err.message === "no-password-method") {
+        setReauthError(
+          "This account doesn't use a password. Sign out and back in to delete."
+        );
+      } else {
+        console.error("[profile/edit] failed to delete account:", err);
+        setReauthError("Couldn't delete your account. Please try again.");
+      }
+      setDeleting(false);
     }
   };
 
@@ -173,15 +247,112 @@ function EditProfileForm({ currentUser }: { currentUser: User }) {
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-border/60 flex justify-center">
+        <div className="mt-10 pt-6 border-t border-border/60 flex flex-col items-center gap-2">
           <button
             onClick={handleDeleteAccount}
             className="px-3 py-2 text-[13px] text-muted hover:text-[#F87171] active:text-[#F87171] transition-colors"
           >
             Delete account
           </button>
+          {deleteError && (
+            <p className="text-[12px] text-[#F87171] text-center max-w-[280px] leading-snug">
+              {deleteError}
+            </p>
+          )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title="Delete your account?"
+        message="This permanently removes your Matchpoint account and all your data. This action cannot be undone."
+        confirmLabel={deleting ? "Deleting…" : "Delete account"}
+        cancelLabel="Cancel"
+        destructive
+        onConfirm={handleConfirmDelete}
+        onCancel={() => {
+          if (deleting) return;
+          setConfirmDeleteOpen(false);
+        }}
+      />
+
+      {reauthPromptOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reauth-dialog-title"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-6"
+        >
+          <button
+            type="button"
+            aria-label="Cancel"
+            onClick={() => {
+              if (deleting) return;
+              setReauthPromptOpen(false);
+              setReauthPassword("");
+              setReauthError(null);
+            }}
+            tabIndex={-1}
+            className="absolute inset-0 bg-black/60 cursor-default"
+          />
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void handleReauthAndDelete();
+            }}
+            className="relative bg-surface border border-border/60 rounded-2xl shadow-2xl w-full max-w-[320px] p-5"
+          >
+            <h2
+              id="reauth-dialog-title"
+              className="font-semibold text-foreground text-[16px] leading-tight"
+            >
+              Confirm your password
+            </h2>
+            <p className="text-muted text-[13px] mt-2 leading-relaxed">
+              For your security, re-enter your password to permanently delete
+              your account.
+            </p>
+            <div className="mt-4">
+              <TextInput
+                type="password"
+                autoFocus
+                autoComplete="current-password"
+                value={reauthPassword}
+                onChange={(e) => setReauthPassword(e.target.value)}
+                placeholder="Password"
+                disabled={deleting}
+              />
+            </div>
+            {reauthError && (
+              <p className="text-[12px] text-[#F87171] mt-2 leading-snug">
+                {reauthError}
+              </p>
+            )}
+            <div className="flex gap-2 mt-5">
+              <button
+                type="button"
+                onClick={() => {
+                  if (deleting) return;
+                  setReauthPromptOpen(false);
+                  setReauthPassword("");
+                  setReauthError(null);
+                }}
+                disabled={deleting}
+                className="flex-1 py-2.5 rounded-full bg-foreground/5 text-foreground text-[14px] font-medium active:opacity-80 transition-opacity disabled:opacity-60"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={deleting || reauthPassword.length === 0}
+                className="flex-1 py-2.5 rounded-full bg-[#F87171]/15 text-[#F87171] text-[14px] font-medium active:opacity-80 transition-opacity disabled:opacity-60"
+              >
+                {deleting ? "Deleting…" : "Delete account"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

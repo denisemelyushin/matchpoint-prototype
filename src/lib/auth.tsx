@@ -10,9 +10,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { FirebaseError } from "firebase/app";
 import {
   createUserWithEmailAndPassword,
+  deleteUser as fbDeleteUser,
+  EmailAuthProvider,
   onAuthStateChanged,
+  reauthenticateWithCredential,
   signInWithEmailAndPassword,
   signOut as fbSignOut,
   updateProfile as fbUpdateProfile,
@@ -25,6 +29,7 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { getFirebaseAuth, getFirebaseDb } from "./firebase";
+import { purgeUserData } from "./account-purge";
 
 function initialsFromName(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -60,6 +65,19 @@ interface AuthState {
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  // Permanently deletes the currently signed-in Firebase Auth user. On
+  // success the auth listener fires, currentUserId goes null, and the
+  // caller can navigate to the welcome screen.
+  //
+  // Firebase requires a "recent login" for destructive account operations.
+  // If the session is too old, pass the user's password: we'll
+  // reauthenticate with EmailAuthProvider and retry the delete in one go.
+  //
+  // Rejects with:
+  //   - Error("requires-recent-login")  — reauth needed but no password provided
+  //   - Error("wrong-password")         — reauth attempted, credential invalid
+  //   - Error("no-password-method")     — account has no email/password provider
+  deleteAccount: (password?: string) => Promise<void>;
   // Resolves with the signed-in uid. If the user is currently a guest, opens
   // the auth modal and only resolves once they successfully sign in / sign up.
   // Rejects with Error("auth-cancelled") if the user dismisses the modal.
@@ -136,6 +154,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await fbSignOut(getFirebaseAuth());
   }, []);
 
+  const deleteAccount = useCallback(async (password?: string) => {
+    const user = getFirebaseAuth().currentUser;
+    if (!user) {
+      // Nothing to delete — treat as success so the caller can still
+      // navigate the user back to the welcome screen.
+      return;
+    }
+
+    // Account deletion is destructive AND fans out into a multi-step
+    // Firestore purge, so we always require a fresh password confirmation
+    // before touching any data. That way a stale session (which would
+    // cause `deleteUser()` to reject mid-flow, after data has been purged)
+    // is impossible.
+    if (!password) {
+      throw new Error("requires-recent-login");
+    }
+    if (!user.email) {
+      throw new Error("no-password-method");
+    }
+    const cred = EmailAuthProvider.credential(user.email, password);
+    try {
+      await reauthenticateWithCredential(user, cred);
+    } catch (err) {
+      if (err instanceof FirebaseError) {
+        // Firebase collapses a few failure modes onto invalid-credential
+        // in newer SDKs; treat them all as "wrong password" for the UI.
+        if (
+          err.code === "auth/wrong-password" ||
+          err.code === "auth/invalid-credential" ||
+          err.code === "auth/invalid-login-credentials"
+        ) {
+          throw new Error("wrong-password");
+        }
+      }
+      throw err;
+    }
+    // Reauth succeeded → auth is guaranteed fresh. Purge Firestore first
+    // (while the session is still valid) and only then delete the Auth
+    // user.
+    await purgeUserData(user.uid);
+    await fbDeleteUser(user);
+  }, []);
+
   const openAuthModal = useCallback(() => setModalOpen(true), []);
 
   const closeAuthModal = useCallback(
@@ -166,6 +227,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signIn,
       signOut,
+      deleteAccount,
       requireAuth,
       modalOpen,
       openAuthModal,
@@ -177,6 +239,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       signIn,
       signOut,
+      deleteAccount,
       requireAuth,
       modalOpen,
       openAuthModal,
