@@ -21,6 +21,24 @@ export default function EditProfilePage() {
   const handleCancel = useCallback(() => router.push("/feed"), [router]);
   const { isReady } = useRequireAuthPage(handleCancel);
   const { currentUser } = useAppStore();
+  const { currentUserId, isAuthenticating } = useAuth();
+
+  // If the user was signed in on this page and then becomes signed out
+  // (sign-out from somewhere else, or successful account deletion), route
+  // them to the onboarding / welcome flow. We live on this outer page
+  // because the inner form unmounts the moment `isReady` flips to false,
+  // which would cancel any navigation effect declared inside it.
+  const wasSignedInRef = useRef(false);
+  useEffect(() => {
+    if (isAuthenticating) return;
+    if (currentUserId) {
+      wasSignedInRef.current = true;
+      return;
+    }
+    if (wasSignedInRef.current) {
+      router.replace("/onboarding");
+    }
+  }, [currentUserId, isAuthenticating, router]);
 
   if (!isReady || !currentUser) return null;
 
@@ -31,7 +49,7 @@ export default function EditProfilePage() {
 function EditProfileForm({ currentUser }: { currentUser: User }) {
   const router = useRouter();
   const { updateProfile } = useAppStore();
-  const { deleteAccount, currentUserId } = useAuth();
+  const { deleteAccount } = useAuth();
 
   const [name, setName] = useState(currentUser.name);
   const [bio, setBio] = useState(currentUser.bio);
@@ -43,7 +61,6 @@ function EditProfileForm({ currentUser }: { currentUser: User }) {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [pendingWelcomeRedirect, setPendingWelcomeRedirect] = useState(false);
   // When Firebase demands a fresh sign-in for deletion, we open a password
   // prompt so the user can reauthenticate and delete in one step (rather
   // than being silently signed out and losing context).
@@ -52,14 +69,10 @@ function EditProfileForm({ currentUser }: { currentUser: User }) {
   const [reauthError, setReauthError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // After a successful account deletion we need to wait for the auth
-  // listener to clear `currentUserId` before navigating — otherwise the
-  // welcome page still sees a signed-in user and bounces us to /feed.
-  useEffect(() => {
-    if (pendingWelcomeRedirect && !currentUserId) {
-      router.replace("/");
-    }
-  }, [pendingWelcomeRedirect, currentUserId, router]);
+  // Note: post-delete navigation to /onboarding is handled by the outer
+  // <EditProfilePage> component, which stays mounted while the auth state
+  // transitions to signed-out. Once `currentUserId` goes null, the outer
+  // page's effect fires `router.replace("/onboarding")`.
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -105,10 +118,8 @@ function EditProfileForm({ currentUser }: { currentUser: User }) {
     try {
       await deleteAccount();
       setConfirmDeleteOpen(false);
-      // Defer navigation until the auth listener clears currentUserId so
-      // the welcome page doesn't redirect us back to /feed on a stale
-      // auth state.
-      setPendingWelcomeRedirect(true);
+      // The outer EditProfilePage watches for currentUserId to clear and
+      // will navigate us to /onboarding automatically.
     } catch (err) {
       if (err instanceof Error && err.message === "requires-recent-login") {
         // Firebase won't delete the user without a fresh sign-in. Prompt
@@ -140,7 +151,7 @@ function EditProfileForm({ currentUser }: { currentUser: User }) {
       await deleteAccount(pwd);
       setReauthPromptOpen(false);
       setReauthPassword("");
-      setPendingWelcomeRedirect(true);
+      // Outer page handles navigation once currentUserId clears.
     } catch (err) {
       if (err instanceof Error && err.message === "wrong-password") {
         setReauthError("Incorrect password. Please try again.");

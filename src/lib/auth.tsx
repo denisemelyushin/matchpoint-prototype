@@ -273,13 +273,24 @@ export function useRequireAuthPage(onCancelled?: () => void): {
 } {
   const { currentUserId, isAuthenticating, requireAuth } = useAuth();
   const triggeredRef = useRef(false);
+  // Tracks whether the user was signed in at any point during this hook's
+  // lifetime. If they were, a later transition to `currentUserId == null`
+  // means they explicitly signed out or deleted their account, and the
+  // page is expected to navigate away on its own — we must NOT pop the
+  // auth modal, or the user sees "Create your account" flash over the
+  // screen on the way out.
+  const everSignedInRef = useRef(false);
 
   useEffect(() => {
     if (isAuthenticating) return;
     if (currentUserId) {
       triggeredRef.current = false;
+      everSignedInRef.current = true;
       return;
     }
+    // Intentional sign-out / account deletion from this same page — let
+    // the caller handle navigation silently.
+    if (everSignedInRef.current) return;
     if (triggeredRef.current) return;
     triggeredRef.current = true;
     requireAuth().catch(() => {
