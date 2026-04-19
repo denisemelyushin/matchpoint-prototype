@@ -1,10 +1,8 @@
-import { REFERENCE_NOW } from "./time";
-
 // Fixed locale so server and client produce identical output during hydration.
 const LOCALE = "en-US";
 
 export function formatRelative(timestamp: number): string {
-  const diff = Math.max(0, REFERENCE_NOW - timestamp);
+  const diff = Math.max(0, Date.now() - timestamp);
   const min = 60 * 1000;
   const hr = 60 * min;
   const day = 24 * hr;
@@ -64,14 +62,9 @@ export function sameMessageDay(a: number, b: number): boolean {
 // - Today / Yesterday for the two most recent days.
 // - Weekday name for anything within the past week.
 // - "April 12" / "April 12, 2024" for older messages.
-//
-// `now` lets the caller pick an explicit anchor for "today". This matters in
-// the prototype where seeded data is tied to REFERENCE_NOW but user-sent
-// messages carry real-time timestamps — the chat page passes whichever is
-// latest so the newest day always reads as "Today" regardless of clock drift.
 export function formatMessageDaySeparator(
   timestamp: number,
-  now: number = REFERENCE_NOW
+  now: number = Date.now()
 ): string {
   const todayIdx = utcDayIndex(now);
   const dayIdx = utcDayIndex(timestamp);
@@ -102,7 +95,7 @@ export function formatMessageDaySeparator(
 // a nearby day — matching the cadence used in the chat day separators.
 export function formatGameDate(
   iso: string,
-  now: number = REFERENCE_NOW
+  now: number = Date.now()
 ): { relative: string | null; dateLabel: string; time: string } {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) {

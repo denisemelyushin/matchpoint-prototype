@@ -250,15 +250,15 @@ Full conversation view:
   - `Yesterday` for the previous day.
   - The weekday name (e.g. `Monday`) for anything within the last 7 days.
   - `April 12` / `April 12, 2024` for older messages (year appended only when it differs from the reference year).
-  - The "today" anchor used for these labels is the latest of `REFERENCE_NOW` or the most recent message in the thread, so messages authored after `REFERENCE_NOW` (e.g. newly sent ones during a demo) still read as `Today` and earlier days shift to `Yesterday` / weekday labels automatically.
+  - The "today" anchor is the real wall-clock `Date.now()` at render time, so newly sent messages always read as `Today` and older days shift to `Yesterday` / weekday labels automatically.
 - Composer at the bottom with placeholder "Message {first name}…".
 - Enter to send.
 
 ### 12.3 New chat (`/chat/new`)
 Opened from the top-right **Add** button on the Chats tab. Shows:
 - A search input for filtering players by name or email.
-- A list of all other users. Each row shows the player's avatar, name, and email — **no skill level** chip, since skill is not relevant when choosing someone to message.
-- Selecting a player opens (or creates) a chat with them and jumps to it.
+- A list of all other users, sorted alphabetically by name (case-insensitive). Each row shows the player's avatar, name, and email — **no skill level** chip, since skill is not relevant when choosing someone to message.
+- Selecting a player opens the chat detail screen with them and jumps to it. The underlying chat is **created lazily on the first message**, so opening a conversation with someone and then leaving without typing anything does not pollute the Chats list with an empty thread. A conversation only appears in the Chats list once at least one message has been sent.
 
 ---
 

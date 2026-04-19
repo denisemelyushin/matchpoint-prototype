@@ -86,10 +86,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsub = onAuthStateChanged(auth, (u) => {
       setFirebaseUser(u);
       setIsAuthenticating(false);
-      // If a requireAuth() call was waiting, resolve it now.
-      if (u && pendingRef.current) {
-        pendingRef.current.resolve(u.uid);
-        pendingRef.current = null;
+      if (u) {
+        // If a requireAuth() call was waiting, resolve it now.
+        if (pendingRef.current) {
+          pendingRef.current.resolve(u.uid);
+          pendingRef.current = null;
+        }
+        // Always close the auth modal once the user is signed in — this
+        // covers both the requireAuth() flow and the direct openAuthModal()
+        // flow (menu "Sign in" tile, Chats empty-state CTA, post detail
+        // "Sign in to like" prompt). Without this, submitting sign-up/sign-
+        // in from those entry points leaves the modal covering the page
+        // even though auth already succeeded.
         setModalOpen(false);
       }
     });

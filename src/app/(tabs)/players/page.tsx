@@ -21,7 +21,7 @@ export default function PlayersTabPage() {
   }, [users, currentUserId, filter, isFriend]);
 
   return (
-    <div className="px-4 py-2 pb-4">
+    <div className="px-4 py-2 pb-24">
       <PlayersFilterToggle value={filter} onChange={setFilter} />
       {otherPlayers.length === 0 ? (
         <EmptyState

@@ -13,13 +13,15 @@ loadEnv({ path: ".env.local" });
 import { Timestamp } from "firebase-admin/firestore";
 import { getAdminDb } from "./firebase-admin";
 
-const REFERENCE_NOW = new Date("2026-04-16T12:00:00.000Z").getTime();
+// Anchor all seeded timestamps to the moment the seed script runs, so relative
+// labels like "2 hr ago" / "Today" always read as fresh on the next client load.
+const SEED_NOW = Date.now();
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
 function ts(offsetMs: number): Timestamp {
-  return Timestamp.fromMillis(REFERENCE_NOW + offsetMs);
+  return Timestamp.fromMillis(SEED_NOW + offsetMs);
 }
 
 function initialsFromName(name: string): string {

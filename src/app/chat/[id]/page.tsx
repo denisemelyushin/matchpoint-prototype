@@ -9,7 +9,6 @@ import { Avatar } from "@/components/Avatar";
 import { MessageBubble } from "@/components/MessageBubble";
 import { SendIcon } from "@/components/icons";
 import { formatMessageDaySeparator, sameMessageDay } from "@/lib/format";
-import { REFERENCE_NOW } from "@/lib/time";
 
 export default function ChatDetailPage({
   params,
@@ -25,16 +24,30 @@ export default function ChatDetailPage({
   const endRef = useRef<HTMLDivElement | null>(null);
 
   const chat = getChat(id);
-  const otherUserId = chat?.participantIds.find((p) => p !== currentUserId);
+
+  // Chat ids are deterministic: `${uidA}__${uidB}` (sorted). When the user
+  // opens a conversation they've never messaged before, the chat doc doesn't
+  // exist in Firestore yet — it'll be created by `sendMessage` on the first
+  // send. Recover the "other" participant from the id so we can render the
+  // draft view (header + empty state) without a backing doc.
+  const otherUserId =
+    chat?.participantIds.find((p) => p !== currentUserId) ??
+    (currentUserId
+      ? id.split("__").find((p) => p !== currentUserId && p.length > 0)
+      : undefined);
   const otherUser = otherUserId ? getUser(otherUserId) : undefined;
+  const messages = chat?.messages ?? [];
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chat?.messages.length]);
+  }, [messages.length]);
 
   if (!isReady) return null;
 
-  if (!chat || !otherUser) {
+  // Only treat the chat as "not found" if we can't even resolve the other
+  // participant from the id (e.g. malformed link or the current user isn't
+  // one of the encoded uids).
+  if (!otherUser) {
     return (
       <div className="flex flex-col h-full bg-background">
         <AppHeader title="Chat" onBack={backToChats} />
@@ -50,7 +63,7 @@ export default function ChatDetailPage({
     if (!v) return;
     setDraft("");
     try {
-      await sendMessage(chat.id, v);
+      await sendMessage(id, v);
     } catch (err) {
       console.error("[chat] failed to send message:", err);
       setDraft(v);
@@ -72,7 +85,7 @@ export default function ChatDetailPage({
       />
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
-        {chat.messages.length === 0 ? (
+        {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center gap-3 text-center">
             <Avatar
               name={otherUser.name}
@@ -86,17 +99,11 @@ export default function ChatDetailPage({
           </div>
         ) : (
           (() => {
-            // Anchor "today" to whichever is latest: seeded REFERENCE_NOW or
-            // the freshest message. Keeps newly sent messages labeled "Today"
-            // even though they carry real-time timestamps that drift past
-            // REFERENCE_NOW.
-            const latest =
-              chat.messages[chat.messages.length - 1]?.createdAt ?? REFERENCE_NOW;
-            const effectiveNow = Math.max(REFERENCE_NOW, latest);
-            return chat.messages.map((m, i) => {
-              const prev = i > 0 ? chat.messages[i - 1] : null;
+            const effectiveNow = Date.now();
+            return messages.map((m, i) => {
+              const prev = i > 0 ? messages[i - 1] : null;
               const next =
-                i < chat.messages.length - 1 ? chat.messages[i + 1] : null;
+                i < messages.length - 1 ? messages[i + 1] : null;
               const showSeparator =
                 !prev || !sameMessageDay(prev.createdAt, m.createdAt);
               // Tight spacing only when the previous bubble is from the same

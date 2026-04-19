@@ -16,7 +16,12 @@ export default function NewChatPage() {
   const [query, setQuery] = useState("");
 
   const candidates = useMemo(
-    () => users.filter((u) => u.id !== currentUserId),
+    () =>
+      users
+        .filter((u) => u.id !== currentUserId)
+        .sort((a, b) =>
+          a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
+        ),
     [users, currentUserId]
   );
 

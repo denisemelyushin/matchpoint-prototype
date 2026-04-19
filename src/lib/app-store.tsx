@@ -53,6 +53,14 @@ function tsToMs(value: unknown): number {
   return 0;
 }
 
+// Firestore's `serverTimestamp()` is `null` locally until the server acks,
+// which makes a brand-new post / message / comment render with createdAt=0
+// for a flicker. Reading the snapshot with `serverTimestamps: "estimate"`
+// swaps in a local estimate based on when the write was performed, so the
+// doc appears instantly in the correct place and reconciles seamlessly
+// once the server resolves the real timestamp.
+const SNAPSHOT_OPTIONS = { serverTimestamps: "estimate" } as const;
+
 function userFromDoc(id: string, data: DocumentData): User {
   return {
     id,
@@ -264,7 +272,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       (snap) => {
         const next = new Map<string, PostBase>();
         for (const d of snap.docs) {
-          next.set(d.id, postBaseFromDoc(d.id, d.data()));
+          next.set(d.id, postBaseFromDoc(d.id, d.data(SNAPSHOT_OPTIONS)));
         }
         setPostBases(next);
       },
@@ -282,7 +290,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
           const postId = d.ref.parent.parent?.id;
           if (!postId) continue;
           const arr = next.get(postId) ?? [];
-          arr.push(commentFromDoc(d.id, d.data()));
+          arr.push(commentFromDoc(d.id, d.data(SNAPSHOT_OPTIONS)));
           next.set(postId, arr);
         }
         for (const arr of next.values()) {
@@ -345,7 +353,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     const unsub = onSnapshot(
       query(collection(db, "games"), orderBy("date", "asc")),
       (snap) => {
-        setGames(snap.docs.map((d) => gameFromDoc(d.id, d.data())));
+        setGames(snap.docs.map((d) => gameFromDoc(d.id, d.data(SNAPSHOT_OPTIONS))));
       },
       (err) => console.error("[app-store] games snapshot error:", err)
     );
@@ -368,10 +376,24 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         collection(db, "chats"),
         where("participantIds", "array-contains", currentUserId)
       ),
+      // Listen for metadata changes too so we can re-evaluate per-chat
+      // subscriptions once a locally-pending new chat has been server-
+      // committed. Without this, a brand-new chat's message listener would
+      // start while the parent chat doc is still pending on the server, and
+      // the messages rule's `get(chats/$chatId)` would fail with
+      // permission-denied because the chat doc hasn't propagated yet.
+      { includeMetadataChanges: true },
       (snap) => {
-        const next = new Map<string, { id: string; participantIds: [string, string] }>();
+        const next = new Map<
+          string,
+          {
+            id: string;
+            participantIds: [string, string];
+            serverCommitted: boolean;
+          }
+        >();
         for (const d of snap.docs) {
-          const data = d.data();
+          const data = d.data(SNAPSHOT_OPTIONS);
           const pids = Array.isArray(data.participantIds)
             ? (data.participantIds as string[])
             : [];
@@ -379,12 +401,20 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
           next.set(d.id, {
             id: d.id,
             participantIds: [pids[0], pids[1]] as [string, string],
+            serverCommitted: !d.metadata.hasPendingWrites,
           });
         }
-        setChatMetas(next);
+        setChatMetas(
+          new Map(
+            Array.from(next, ([id, v]) => [
+              id,
+              { id: v.id, participantIds: v.participantIds },
+            ])
+          )
+        );
 
-        // Sync per-chat message subscriptions: add subs for new chats, remove
-        // subs for chats the user is no longer in.
+        // Sync per-chat message subscriptions: add subs for new (server-
+        // committed) chats, remove subs for chats the user is no longer in.
         const current = chatMessagesUnsubsRef.current;
         for (const id of current.keys()) {
           if (!next.has(id)) {
@@ -397,8 +427,12 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
             });
           }
         }
-        for (const id of next.keys()) {
+        for (const [id, meta] of next) {
           if (current.has(id)) continue;
+          // Skip until the chat doc has been server-committed — otherwise
+          // the per-chat message listener races with the chat write and the
+          // messages rule denies access.
+          if (!meta.serverCommitted) continue;
           const msgUnsub = onSnapshot(
             query(
               collection(db, "chats", id, "messages"),
@@ -406,7 +440,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
             ),
             (msgSnap) => {
               const msgs = msgSnap.docs.map((m) =>
-                messageFromDoc(m.id, m.data())
+                messageFromDoc(m.id, m.data(SNAPSHOT_OPTIONS))
               );
               setMessagesByChat((prev) => {
                 const copy = new Map(prev);
@@ -663,27 +697,20 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     [db, requireAuth]
   );
 
+  // Returns the deterministic chat id for (currentUser, otherUser) without
+  // writing anything to Firestore. The chat document itself is created
+  // lazily by `sendMessage` when the first message is sent, so opening the
+  // chat detail view for a user you've never messaged doesn't pollute the
+  // Chats list with empty conversations.
   const startOrGetChat = useCallback<AppStore["startOrGetChat"]>(
     async (otherUserId) => {
       const uid = await requireAuth();
       if (otherUserId === uid) {
         throw new Error("Cannot start a chat with yourself");
       }
-      const id = chatIdFor(uid, otherUserId);
-      const ref = doc(db, "chats", id);
-      // Idempotent create: writing with setDoc({merge:true}) is safe whether
-      // the chat already exists or not.
-      await setDoc(
-        ref,
-        {
-          participantIds: [uid, otherUserId].sort(),
-          createdAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
-      return id;
+      return chatIdFor(uid, otherUserId);
     },
-    [db, requireAuth]
+    [requireAuth]
   );
 
   const sendMessage = useCallback<AppStore["sendMessage"]>(
@@ -691,17 +718,38 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       const trimmed = content.trim();
       if (!trimmed) return;
       const uid = await requireAuth();
+
+      // Chat ids encode the two participant uids (sorted, joined by "__").
+      // Recover them so we can create the chat doc on the first message.
+      const parts = chatId.split("__");
+      if (parts.length !== 2 || !parts.includes(uid)) {
+        throw new Error(`Invalid chat id for current user: ${chatId}`);
+      }
+      const participantIds = [parts[0], parts[1]].sort();
+
+      // Idempotently ensure the chat doc exists before we write the message.
+      // - On first send: this is a create, satisfying the chats `create` rule
+      //   (participantIds.size == 2 and uid is a participant).
+      // - On subsequent sends: this is an update that refreshes the
+      //   lastMessage* preview fields.
+      // Must run (and server-commit) BEFORE addDoc, because the messages
+      // `create` rule reads the chat doc via get() to verify the sender is
+      // a participant.
+      await setDoc(
+        doc(db, "chats", chatId),
+        {
+          participantIds,
+          createdAt: serverTimestamp(),
+          lastMessagePreview: trimmed.slice(0, 120),
+          lastMessageAt: serverTimestamp(),
+          lastMessageSenderId: uid,
+        },
+        { merge: true }
+      );
       await addDoc(collection(db, "chats", chatId, "messages"), {
         senderId: uid,
         content: trimmed,
         createdAt: serverTimestamp(),
-      });
-      // Denormalise the latest-message preview onto the chat doc so the
-      // Chats list can render without reading every subcollection.
-      await updateDoc(doc(db, "chats", chatId), {
-        lastMessagePreview: trimmed.slice(0, 120),
-        lastMessageAt: serverTimestamp(),
-        lastMessageSenderId: uid,
       });
     },
     [db, requireAuth]

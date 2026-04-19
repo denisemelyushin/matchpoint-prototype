@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { useAppStore } from "@/lib/app-store";
 import { GameCard } from "@/components/GameCard";
 import { EmptyState } from "@/components/EmptyState";
-import { REFERENCE_NOW } from "@/lib/time";
 
 type GamesFilter = "upcoming" | "today" | "tomorrow" | "weekend";
 
@@ -56,7 +55,7 @@ export default function GamesTabPage() {
       endOfTomorrow,
       weekendStart,
       weekendEnd,
-    } = computeGameRanges(REFERENCE_NOW);
+    } = computeGameRanges(Date.now());
 
     return games
       .filter((g) => !g.isPrivate || g.userId === currentUserId)
