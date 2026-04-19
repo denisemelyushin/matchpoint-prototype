@@ -94,7 +94,7 @@ export function AuthModal() {
   const title = mode === "signUp" ? "Create your account" : "Welcome back";
   const subtitle =
     mode === "signUp"
-      ? "Sign up to post, like, and schedule games."
+      ? "Sign up to create posts, join games and chat with other players"
       : "Sign in to continue where you left off.";
 
   return (
@@ -126,7 +126,9 @@ export function AuthModal() {
         >
           {title}
         </h2>
-        <p className="text-muted text-[13px] mt-1 pr-8">{subtitle}</p>
+        <p className="text-muted text-[15px] mt-2 leading-snug pr-8">
+          {subtitle}
+        </p>
 
         <form onSubmit={handleSubmit} className="mt-5 space-y-3">
           {mode === "signUp" && (

@@ -18,13 +18,13 @@ export default function ChatsTabPage() {
     });
   }, [chats]);
 
-  // Guests have no chats — point them at the sign-in flow rather than
+  // Guests have no chats — point them at the sign-up flow rather than
   // showing the generic "Start one!" empty state.
   if (!currentUserId) {
     return (
       <div className="pb-24 px-6 py-16 flex flex-col items-center text-center gap-3">
         <p className="text-foreground font-semibold text-[15px]">
-          Sign in to see your messages
+          Sign up to see your messages
         </p>
         <p className="text-muted text-sm max-w-[260px]">
           Chats are tied to your account. Create one to start talking with other
@@ -35,7 +35,7 @@ export default function ChatsTabPage() {
           onClick={openAuthModal}
           className="mt-2 px-5 py-2.5 rounded-full bg-primary text-[var(--app-primary-on)] text-[14px] font-semibold active:opacity-80 transition-opacity"
         >
-          Sign in
+          Sign up
         </button>
       </div>
     );
