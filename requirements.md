@@ -41,7 +41,7 @@ A mobile-first web app prototype for connecting pickleball players. This documen
   - Joining or leaving a game.
   - Adding / removing a friend.
   - Sending a message or opening a chat with another player.
-- The auth modal supports switching between **Sign up** (name, email, password) and **Sign in** (email, password). On success it closes and resumes the action the user initiated.
+- The auth modal supports switching between **Sign up** (name, email, password) and **Sign in** (email, password). On success it closes and resumes the action the user initiated. The sheet can be dismissed by tapping the backdrop, pressing Escape, or tapping a close (X) icon in the top-right corner — dismissing counts as cancelling the action that opened the modal; the user stays a guest.
 - The **slide menu** shows either the logged-in user's profile card or, for guests, a "Sign in" entry; a **Log out** entry appears when signed in and returns the user to guest mode (content still visible, gated actions re-prompt).
 
 ---

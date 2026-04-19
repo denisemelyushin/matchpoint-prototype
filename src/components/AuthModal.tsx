@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { FirebaseError } from "firebase/app";
 import { useAuth } from "@/lib/auth";
+import { XIcon } from "@/components/icons";
 
 type Mode = "signIn" | "signUp";
 
@@ -112,13 +113,21 @@ export function AuthModal() {
       />
       <div className="relative w-full max-w-[480px] bg-surface rounded-t-3xl sm:rounded-3xl border border-border/60 p-6 pb-8 shadow-2xl">
         <div className="mx-auto w-10 h-1 rounded-full bg-foreground/20 mb-4 sm:hidden" />
+        <button
+          type="button"
+          aria-label="Close"
+          onClick={() => closeAuthModal({ cancelled: true })}
+          className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center text-muted hover:text-foreground active:opacity-70 transition-colors"
+        >
+          <XIcon size={22} color="currentColor" />
+        </button>
         <h2
           id="auth-modal-title"
-          className="text-foreground text-[20px] font-semibold leading-tight"
+          className="text-foreground text-[20px] font-semibold leading-tight pr-8"
         >
           {title}
         </h2>
-        <p className="text-muted text-[13px] mt-1">{subtitle}</p>
+        <p className="text-muted text-[13px] mt-1 pr-8">{subtitle}</p>
 
         <form onSubmit={handleSubmit} className="mt-5 space-y-3">
           {mode === "signUp" && (
@@ -166,7 +175,7 @@ export function AuthModal() {
           <button
             type="submit"
             disabled={busy}
-            className="w-full py-3 rounded-full bg-primary text-[var(--app-primary-on)] text-[14px] font-semibold active:opacity-80 transition-opacity disabled:opacity-60"
+            className="w-full py-3 mt-3 rounded-full bg-primary text-[var(--app-primary-on)] text-[14px] font-semibold active:opacity-80 transition-opacity disabled:opacity-60"
           >
             {busy
               ? "Please wait…"
@@ -176,12 +185,12 @@ export function AuthModal() {
           </button>
         </form>
 
-        <div className="mt-4 text-center">
+        <div className="mt-5 text-center">
           {mode === "signUp" ? (
             <button
               type="button"
               onClick={() => setMode("signIn")}
-              className="text-[13px] text-muted"
+              className="text-[15px] text-muted"
             >
               Already have an account?{" "}
               <span className="text-foreground font-medium">Sign in</span>
@@ -190,21 +199,13 @@ export function AuthModal() {
             <button
               type="button"
               onClick={() => setMode("signUp")}
-              className="text-[13px] text-muted"
+              className="text-[15px] text-muted"
             >
               New to Matchpoint?{" "}
               <span className="text-foreground font-medium">Sign up</span>
             </button>
           )}
         </div>
-
-        <button
-          type="button"
-          onClick={() => closeAuthModal({ cancelled: true })}
-          className="mt-3 w-full text-center text-muted text-[13px] py-1"
-        >
-          Continue as guest
-        </button>
       </div>
     </div>
   );
