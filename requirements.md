@@ -29,6 +29,7 @@ A mobile-first web app prototype for connecting pickleball players. This documen
 - **Welcome** and **Onboarding** screens must **not scroll vertically** and must **not trigger pull-to-refresh** or rubber-band overscroll.
 - Main app screens (Feed, Games, Players, Chats, and all sub-screens) may scroll vertically but must suppress pull-to-refresh.
 - App data (profile, posts, comments, likes, games, chats, messages) lives in **Firestore** and is streamed into a single React context via real-time subscriptions; UI-only preferences (theme, app-bar / menu-profile / tab-bar variants) remain in `localStorage`.
+- **All absolute dates and times are rendered in the viewer's local timezone.** A game scheduled for 6:00 PM Pacific appears as `6:00 PM` for a viewer in PT and `9:00 PM` for a viewer in ET — the stored moment is the same, only the wall-clock presentation differs. `Today / Yesterday / Tomorrow` boundaries, chat day separators, and game filters all follow the viewer's local calendar day.
 
 ### 3.1 Guest mode & auth gating
 
@@ -176,10 +177,10 @@ Header has a **Post** action. Post must have either text or an image to be creat
 
 ### 10.1 Games list
 Shows public games (and the current user's private games) filtered by a segmented time toggle at the top of the tab. The toggle has four chips, laid out as equal-width pills in a rounded container:
-- **Upcoming** (default) — all games dated today or later.
-- **Today** — games whose date falls on the current day.
-- **Tomorrow** — games whose date falls on the next day.
-- **Weekend** — games whose date falls on the upcoming Saturday and/or Sunday. If today is Saturday, both Saturday and Sunday are included; if today is Sunday, only Sunday is included; otherwise the next Sat–Sun are included.
+- **Upcoming** (default) — strictly future games. Any game whose scheduled start time has already passed is hidden here (so games from earlier today that have finished, or games that drifted into the past, never appear).
+- **Today** — games whose date falls on the current local day (including games earlier today that have already finished — useful for retrospect).
+- **Tomorrow** — games whose date falls on the next local day.
+- **Weekend** — games whose date falls on the upcoming Saturday and/or Sunday and whose start time is still in the future. If today is Saturday, both Saturday and Sunday are included; if today is Sunday, only Sunday is included; otherwise the next Sat–Sun are included.
 
 Within every filter the games are sorted by **date ascending** (soonest first). Each filter shows a contextual empty state when no games match.
 
@@ -188,7 +189,7 @@ Each **game card** shows:
 - A small indicator for private games (lock icon).
 - A pill showing spots remaining or "Full".
 - Main info block organized for scannability:
-  - **Date & time headline**: plain text (no icon) combining the date and time joined by a muted middle-dot. When the game falls on a nearby day the day portion collapses to a relative word (`Today`, `Tomorrow`, or `Yesterday` for just-past games) with the absolute date omitted — e.g. `Today · 9:00 AM`. For any other date the short absolute date is used instead — e.g. `Sat, Apr 18 · 9:00 AM`. Both the day and time share the prominent headline treatment; the separator stays muted.
+  - **Date & time headline**: plain text (no icon) combining the date and time joined by a muted middle-dot. When the game falls on a nearby day the day portion collapses to a relative word (`Today`, `Tomorrow`, or `Yesterday` for just-past games) with the absolute date omitted — e.g. `Today · 9:00 AM`. For any other date the short absolute date is used instead — e.g. `Sat, Apr 18 · 9:00 AM`. The `Today / Yesterday / Tomorrow` boundary follows the user's **local** calendar day (not UTC), so labels always match the segmented filter above. Both the day and time share the prominent headline treatment; the separator stays muted.
   - **Court row**: small muted map-pin icon + court name.
   - A chip row with **minimum skill level** (e.g. `INTERMEDIATE+`) and **players joined / max players** (e.g. `3/4 PLAYERS`).
   - **Notes** (optional) below the chip row.

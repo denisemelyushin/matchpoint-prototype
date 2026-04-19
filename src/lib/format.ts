@@ -1,4 +1,10 @@
-// Fixed locale so server and client produce identical output during hydration.
+// Language/locale for month and weekday names. Timezone is intentionally
+// NOT pinned — every absolute date/time rendered in the app (game cards,
+// chat bubbles, day separators, post relative times) uses the user's
+// local timezone, so the same game viewed from PT and ET will show
+// different wall-clock times. This is safe here because all date-bearing
+// data flows in from Firestore subscriptions that only run on the client,
+// so SSR never emits a formatted date that could mismatch on hydration.
 const LOCALE = "en-US";
 
 export function formatRelative(timestamp: number): string {
@@ -35,7 +41,6 @@ export function formatDateTime(iso: string): string {
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
-    timeZone: "UTC",
   });
 }
 
@@ -44,18 +49,26 @@ export function formatMessageTime(timestamp: number): string {
   return new Date(timestamp).toLocaleTimeString(LOCALE, {
     hour: "numeric",
     minute: "2-digit",
-    timeZone: "UTC",
   });
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-function utcDayIndex(ts: number): number {
-  return Math.floor(ts / DAY_MS);
+// Days-since-epoch computed against the LOCAL calendar. All "same day" /
+// "Today / Yesterday / Tomorrow" comparisons in the UI are about the
+// user's wall-clock day, so boundaries follow local midnight rather than
+// UTC midnight. Without this, a message sent at 11:55 PM local and one
+// at 12:05 AM local could land on the same UTC day (or vice versa),
+// producing the wrong day separator in a chat.
+function localDayIndex(ts: number): number {
+  const d = new Date(ts);
+  return Math.floor(
+    new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() / DAY_MS
+  );
 }
 
 export function sameMessageDay(a: number, b: number): boolean {
-  return utcDayIndex(a) === utcDayIndex(b);
+  return localDayIndex(a) === localDayIndex(b);
 }
 
 // Label for the centered day separator between groups of messages.
@@ -66,9 +79,7 @@ export function formatMessageDaySeparator(
   timestamp: number,
   now: number = Date.now()
 ): string {
-  const todayIdx = utcDayIndex(now);
-  const dayIdx = utcDayIndex(timestamp);
-  const diff = todayIdx - dayIdx;
+  const diff = localDayIndex(now) - localDayIndex(timestamp);
   if (diff === 0) return "Today";
   if (diff === 1) return "Yesterday";
 
@@ -76,16 +87,14 @@ export function formatMessageDaySeparator(
   if (diff > 0 && diff < 7) {
     return d.toLocaleDateString(LOCALE, {
       weekday: "long",
-      timeZone: "UTC",
     });
   }
 
-  const sameYear = d.getUTCFullYear() === new Date(now).getUTCFullYear();
+  const sameYear = d.getFullYear() === new Date(now).getFullYear();
   return d.toLocaleDateString(LOCALE, {
     month: "long",
     day: "numeric",
     year: sameYear ? undefined : "numeric",
-    timeZone: "UTC",
   });
 }
 
@@ -102,7 +111,7 @@ export function formatGameDate(
     return { relative: null, dateLabel: iso, time: "" };
   }
 
-  const diff = utcDayIndex(d.getTime()) - utcDayIndex(now);
+  const diff = localDayIndex(d.getTime()) - localDayIndex(now);
   let relative: string | null = null;
   if (diff === 0) relative = "Today";
   else if (diff === 1) relative = "Tomorrow";
@@ -112,13 +121,11 @@ export function formatGameDate(
     weekday: "short",
     month: "short",
     day: "numeric",
-    timeZone: "UTC",
   });
 
   const time = d.toLocaleTimeString(LOCALE, {
     hour: "numeric",
     minute: "2-digit",
-    timeZone: "UTC",
   });
 
   return { relative, dateLabel, time };

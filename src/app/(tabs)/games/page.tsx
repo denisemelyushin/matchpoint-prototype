@@ -49,13 +49,14 @@ export default function GamesTabPage() {
   const [filter, setFilter] = useState<GamesFilter>("upcoming");
 
   const visibleGames = useMemo(() => {
+    const now = Date.now();
     const {
       startOfToday,
       startOfTomorrow,
       endOfTomorrow,
       weekendStart,
       weekendEnd,
-    } = computeGameRanges(Date.now());
+    } = computeGameRanges(now);
 
     return games
       .filter((g) => !g.isPrivate || g.userId === currentUserId)
@@ -63,14 +64,20 @@ export default function GamesTabPage() {
         const t = new Date(g.date).getTime();
         switch (filter) {
           case "today":
+            // Everything scheduled for today's local date, including games
+            // earlier today that have already finished.
             return t >= startOfToday && t < startOfTomorrow;
           case "tomorrow":
             return t >= startOfTomorrow && t < endOfTomorrow;
           case "weekend":
-            return t >= weekendStart && t < weekendEnd;
+            // Future-weekend games only — past weekend games shouldn't
+            // linger here when scrolling mid-weekend.
+            return t >= Math.max(now, weekendStart) && t < weekendEnd;
           case "upcoming":
           default:
-            return t >= startOfToday;
+            // Strictly future: any game whose start time has already passed
+            // is hidden, so "Yesterday" / past-today games never appear.
+            return t >= now;
         }
       })
       .sort(
