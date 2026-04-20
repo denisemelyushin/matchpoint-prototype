@@ -206,7 +206,12 @@ Every game card shows a single primary action button whose state depends on the 
 - **Game full** — shown as a disabled state when all slots are occupied and the user has not joined.
 - **You're hosting** — shown as a disabled state when the current user is the host of the game.
 
-### 10.3 Create game (`/game/new`)
+### 10.3 Game detail (`/game/[id]`)
+Tapping anywhere on a game card (outside of the action button) opens a full-screen detail view. The back button always returns to the **Games** tab regardless of how the user arrived. The detail screen shows:
+- A summary card mirroring the list card's layout but more spacious: host avatar and name with a "Hosting" caption, private lock indicator, spots-remaining pill, a prominent date & time headline with the short absolute date underneath when the day collapses to a relative word, court row with pin icon, skill + capacity chips (plus a "Private" chip for private games), notes, and the same join / leave / hosting / full action button.
+- A **Players** section listing every joined player with their avatar, name, and skill badge. The host row carries a muted "Host" pill on the right; the current user's row carries a primary-tinted "You" tag next to their name. Empty roster slots are rendered as muted dashed-outline rows labelled "Open spot" so the gap to max players is visible at a glance.
+
+### 10.4 Create game (`/game/new`)
 Opened from the top-right **Add** button on the Games tab. Fields:
 - **Court** — dropdown of preset courts, with a "+ Add custom court" option that reveals a free-text input.
 - **Date & time** (native datetime picker).

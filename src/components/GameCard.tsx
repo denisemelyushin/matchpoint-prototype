@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import type { Game } from "@/lib/types";
 import { useAppStore } from "@/lib/app-store";
 import { formatGameDate } from "@/lib/format";
@@ -11,6 +12,7 @@ interface GameCardProps {
 }
 
 export function GameCard({ game }: GameCardProps) {
+  const router = useRouter();
   const { getUser, currentUserId, joinGame, leaveGame } = useAppStore();
   const host = getUser(game.userId);
   if (!host) return null;
@@ -20,8 +22,25 @@ export function GameCard({ game }: GameCardProps) {
   const spotsLeft = game.maxPlayers - game.playerIds.length;
   const isFull = spotsLeft <= 0;
 
+  const handleCardClick = () => {
+    router.push(`/game/${game.id}`);
+  };
+
+  const handleCardKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleCardClick();
+    }
+  };
+
   return (
-    <div className="bg-surface border border-border/60 rounded-2xl p-4 mb-3">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={handleCardClick}
+      onKeyDown={handleCardKeyDown}
+      className="bg-surface border border-border/60 rounded-2xl p-4 mb-3 cursor-pointer active:bg-foreground/5 transition-colors"
+    >
       <div className="flex items-center gap-3 mb-4">
         <Avatar name={host.name} initials={host.initials} size={40} />
         <div className="flex-1 min-w-0 flex items-center gap-1.5">
@@ -58,7 +77,9 @@ export function GameCard({ game }: GameCardProps) {
         </p>
       )}
 
-      <div className="mt-4">
+      {/* stopPropagation so tapping the action button doesn't also fire the
+          card-level navigate-to-detail click. */}
+      <div className="mt-4" onClick={(e) => e.stopPropagation()}>
         <GameActionButton
           isHost={isHost}
           isJoined={isJoined}

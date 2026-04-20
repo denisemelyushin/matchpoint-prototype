@@ -166,6 +166,7 @@ interface AppStore {
   // Lookups.
   getUser: (id: string) => User | undefined;
   getPost: (id: string) => Post | undefined;
+  getGame: (id: string) => Game | undefined;
   getChat: (id: string) => Chat | undefined;
   getChatWithUser: (otherUserId: string) => Chat | undefined;
   isFriend: (userId: string) => boolean;
@@ -499,6 +500,10 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     (id: string) => posts.find((p) => p.id === id),
     [posts]
   );
+  const getGame = useCallback(
+    (id: string) => games.find((g) => g.id === id),
+    [games]
+  );
   const getChat = useCallback(
     (id: string) => chats.find((c) => c.id === id),
     [chats]
@@ -765,6 +770,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     friendIds,
     getUser,
     getPost,
+    getGame,
     getChat,
     getChatWithUser,
     isFriend,
