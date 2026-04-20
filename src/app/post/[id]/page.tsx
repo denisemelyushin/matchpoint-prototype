@@ -220,7 +220,7 @@ export default function PostDetailPage({
             onClick={openAuthModal}
             className="w-full py-2.5 rounded-full bg-primary text-[var(--app-primary-on)] text-[14px] font-semibold active:opacity-80 transition-opacity"
           >
-            Sign in to comment
+            Sign up to comment
           </button>
         )}
       </div>

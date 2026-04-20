@@ -24,10 +24,10 @@ export default function ChatsTabPage() {
     return (
       <div className="pb-24 px-6 py-16 flex flex-col items-center text-center gap-3">
         <p className="text-foreground font-semibold text-[15px]">
-          Sign up to see your messages
+          Chat with other players
         </p>
-        <p className="text-muted text-sm max-w-[260px]">
-          Chats are tied to your account. Create one to start talking with other
+        <p className="text-muted text-sm max-w-[320px]">
+          Create an account to start conversations and stay in touch with other
           players.
         </p>
         <button

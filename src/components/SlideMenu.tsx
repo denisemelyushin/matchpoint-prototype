@@ -79,7 +79,7 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
                 Guest
               </p>
               <p className="text-muted text-[13px] leading-tight mt-0.5">
-                Sign in to get started
+                Sign up to get started
               </p>
             </div>
           </button>
@@ -138,7 +138,7 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
             tabIndex={isOpen ? 0 : -1}
           >
             <LogInIcon size={22} color="var(--color-muted)" />
-            <span className="text-foreground text-[16px]">Sign In</span>
+            <span className="text-foreground text-[16px]">Sign Up</span>
           </button>
         )}
       </div>
