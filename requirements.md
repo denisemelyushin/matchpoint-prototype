@@ -39,7 +39,7 @@ A mobile-first web app prototype for connecting pickleball players. This documen
   - Editing the current user's profile / visiting `/profile`.
   - Liking or commenting on a post.
   - Joining or leaving a game.
-  - Adding / removing a friend.
+  - Sending, cancelling, accepting, or declining a friend request; removing an existing friend.
   - Sending a message or opening a chat with another player.
 - The auth modal supports switching between **Sign up** (name, email, password) and **Sign in** (email, password). On success it closes and resumes the action the user initiated. The sheet can be dismissed by tapping the backdrop, pressing Escape, or tapping a close (X) icon in the top-right corner — dismissing counts as cancelling the action that opened the modal; the user stays a guest.
 - The **slide menu** shows either the logged-in user's profile card or, for guests, a "Sign up" entry; a **Log out** entry appears when signed in and returns the user to guest mode (content still visible, gated actions re-prompt).
@@ -114,7 +114,7 @@ Menu contents, from top to bottom:
 2. **Settings** link — opens the Settings screen (see §16).
 3. **Privacy Policy** link (opens a page).
 4. **Terms of Use** link (opens a page).
-5. **Log Out** button — signs the user out and returns them to the onboarding flow (which opens on the branded welcome slide).
+5. **Log Out** button — tapping it opens an in-app confirmation dialog ("Log out?", "You'll stay signed out until you sign back in.", destructive Log out button, Cancel) so accidental taps on this persistent destructive action don't drop the session. Confirming signs the user out and returns them to the onboarding flow (which opens on the branded welcome slide).
 
 ---
 
@@ -227,18 +227,51 @@ Header has a **Create** action. The host is automatically added as the first pla
 ## 11. Players (third tab)
 
 - Lists users other than the current user, sorted alphabetically (A→Z) by name using locale-aware, case-insensitive comparison.
-- At the top of the tab content, a pill **segmented toggle** switches between two filters:
-  - **All players** (default) — every other user in the directory.
-  - **My friends** — only users the current user has added as a friend.
-  The selected option is filled with the primary colour; the other is plain muted text on a subtle pill background. The list re-renders instantly when the filter changes, preserving A→Z order. If the resulting list is empty, an inline empty state is shown (e.g. "No friends yet. Add players from All players." for the friends filter).
-- Each player card shows:
+- At the top of the tab content, a pill **segmented toggle** switches between three filters:
+  - **All** (default) — every other user in the directory.
+  - **Friends** — only users with whom the current user has a mutual, accepted friendship.
+  - **Pending** — incoming and outgoing friend requests (see §11.1). When at least one incoming request is pending, the tab label shows a small primary-coloured badge with the incoming count.
+
+  The selected option is filled with the primary colour; the others are plain muted text on a subtle pill background. The list re-renders instantly when the filter changes, preserving A→Z order. If the resulting list is empty, an inline empty state is shown (e.g. "No friends yet. Add players from All." for the friends filter).
+- Each player card on **All** / **Friends** shows:
   - Avatar
   - Name
   - Skill level badge (rendered on its own line directly below the name)
   - Bio (truncated)
-  - A **friend toggle** button on the right. When the user is not yet a friend, the button shows a muted outline "user with +" icon on a subtle neutral background; tapping adds them as a friend immediately. When they are already a friend, the button flips to a primary-tinted "user with check" icon; tapping it opens an in-app **confirmation dialog** ("Remove {name} from friends?", explanatory body, destructive Remove button, Cancel button, dismissable via backdrop or Escape) before the friend is removed. Tapping never navigates.
-  - A **message** shortcut button (primary-tinted) next to the friend toggle that opens — or creates — a chat with that player.
-- Friend relationships live in the app store under `friendIds: string[]` (a list of user IDs the current user has befriended). Helpers `isFriend(userId)` and `toggleFriend(userId)` back the player card button and the friends filter.
+  - A **friendship action** button on the right whose icon and behaviour depend on the current state between the viewer and the player:
+    - **Not connected** — muted outline "user with +" icon on a subtle neutral background. Tap sends a friend request. (If the other user has already sent a request to the viewer, this "shortcut add" accepts their request in one step instead of creating a duplicate.)
+    - **Request sent** — muted clock icon on a subtle neutral background. Tap opens a confirmation dialog ("Cancel request to {name}?") before withdrawing the request.
+    - **Request received** — solid primary-tinted "user with check" icon. Tap accepts the request immediately. Declining happens from the **Pending** tab.
+    - **Friends** — primary-tinted "user with check" icon on a tinted background. Tap opens a confirmation dialog ("Remove {name} from friends?", explanatory body, destructive Remove button, Cancel button, dismissable via backdrop or Escape) before the friendship is dissolved on both sides.
+    Tapping the button never navigates.
+  - A **message** shortcut button (primary-tinted) next to the friendship action that opens — or creates — a chat with that player.
+
+### 11.1 Pending sub-tab
+
+Selecting **Pending** replaces the player list with two stacked sections (both optional):
+
+- **Incoming** — players who have asked to be the viewer's friend, each rendered with an Accept primary-filled check button and a muted Decline "×" button. Accept makes them friends on both sides; decline clears the request from both users.
+- **Sent** — requests the viewer has initiated that haven't been accepted yet, each rendered with a pill "Pending" chip (clock icon + label). Tapping the chip opens the same cancel-confirmation dialog used on the All / Friends tabs.
+
+When both sections are empty, an inline empty state is shown: "No pending requests yet. Add players from All to get started."
+
+### 11.2 Data model
+
+Friendship is **mutual and consent-based**. The app store exposes three parallel arrays derived from the current user's doc:
+
+- `friendIds: string[]` — confirmed friends (mirrored on both users' docs).
+- `incomingFriendRequests: string[]` — users who have asked to be your friend.
+- `outgoingFriendRequests: string[]` — users you've asked, pending their accept.
+
+Helpers:
+- `isFriend(userId)` — confirmed mutual friend.
+- `getFriendshipStatus(userId)` — returns `"none" | "outgoing" | "incoming" | "friends"` and drives the player-card UI.
+- `canSeePrivateContentFrom(authorId)` — true iff the viewer is the author or a confirmed friend of theirs; used by the feed and games tabs to gate private items.
+
+Mutations:
+- `sendFriendRequest(userId)`, `cancelFriendRequest(userId)`, `acceptFriendRequest(userId)`, `declineFriendRequest(userId)`, `removeFriend(userId)`.
+
+Each mutation uses a Firestore `WriteBatch` so the two users' docs move in lock-step. Firestore rules narrowly permit the caller to add or remove only their **own** uid from the counterpart's `friendIds` / `incomingFriendRequests` / `outgoingFriendRequests` arrays, so users can never mutate anyone else's social graph beyond their own membership.
 
 ## 12. Chats (fourth tab)
 
@@ -275,8 +308,9 @@ Opened from the top-right **Add** button on the Chats tab. Shows:
 
 ## 13. Privacy & Visibility
 
-- **Posts** can be marked Public or Private. Public posts are visible to everyone on the MatchPoint app; private posts are scoped to the author's friends.
-- **Games** can be marked Public or Private. Public games are visible and joinable by everyone on the MatchPoint app; private games are scoped to the host's friends, who can see and join them.
+- **Posts** can be marked Public or Private. Public posts are visible to everyone on the MatchPoint app; private posts are scoped to the author and the author's confirmed mutual friends (see §11.2). "Pending" friend requests do not grant access — only an accepted request does.
+- **Games** can be marked Public or Private. Public games are visible and joinable by everyone on the MatchPoint app; private games are scoped to the host and the host's confirmed mutual friends, who can see and join them.
+- Deep links to a private post (`/post/[id]`) or private game (`/game/[id]`) that the viewer is not authorised to see render the generic "not found" empty state so the URL itself doesn't leak content metadata.
 - Private posts display a small muted lock icon in the top-right of the post header, on both the feed card and the post detail screen. Private games display a small lock icon in their game card.
 
 ---

@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/app-store";
 import { useAuth } from "@/lib/auth";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { MenuProfileCard } from "./MenuProfileCard";
 import {
   ShieldIcon,
@@ -27,13 +29,22 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
   const router = useRouter();
   const { currentUser } = useAppStore();
   const { signOut, openAuthModal } = useAuth();
+  const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
 
   const go = (path: string) => {
     onClose();
     router.push(path);
   };
 
-  const handleLogout = async () => {
+  // Tapping "Log Out" in the menu opens a confirmation dialog rather than
+  // signing the user out immediately — accidental taps on a persistent
+  // destructive action are easy to make in a slide menu.
+  const handleLogoutClick = () => {
+    setConfirmLogoutOpen(true);
+  };
+
+  const handleConfirmLogout = async () => {
+    setConfirmLogoutOpen(false);
     onClose();
     try {
       await signOut();
@@ -51,6 +62,7 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
   };
 
   return (
+    <>
     <aside
       aria-hidden={!isOpen}
       className="absolute top-0 left-0 bottom-0 z-0 w-[300px] flex flex-col pt-12 bg-background"
@@ -124,7 +136,7 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
       <div className="p-3 pb-6">
         {currentUser ? (
           <button
-            onClick={handleLogout}
+            onClick={handleLogoutClick}
             className="flex items-center gap-4 w-full px-4 py-3.5 rounded-xl active:bg-foreground/5 transition-colors"
             tabIndex={isOpen ? 0 : -1}
           >
@@ -142,6 +154,22 @@ export function SlideMenu({ isOpen, onClose }: SlideMenuProps) {
           </button>
         )}
       </div>
+
     </aside>
+
+    {/* Rendered OUTSIDE the <aside> so the dialog escapes the menu's
+        stacking context — otherwise the main app shell (which sits on a
+        higher z layer than the menu) would clip or cover the dialog. */}
+    <ConfirmDialog
+      open={confirmLogoutOpen}
+      title="Log out?"
+      message="You'll stay signed out until you sign back in."
+      confirmLabel="Log out"
+      cancelLabel="Cancel"
+      destructive
+      onConfirm={handleConfirmLogout}
+      onCancel={() => setConfirmLogoutOpen(false)}
+    />
+    </>
   );
 }

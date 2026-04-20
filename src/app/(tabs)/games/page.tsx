@@ -45,7 +45,7 @@ function computeGameRanges(now: number) {
 }
 
 export default function GamesTabPage() {
-  const { games, currentUserId } = useAppStore();
+  const { games, canSeePrivateContentFrom } = useAppStore();
   const [filter, setFilter] = useState<GamesFilter>("upcoming");
 
   const visibleGames = useMemo(() => {
@@ -59,7 +59,7 @@ export default function GamesTabPage() {
     } = computeGameRanges(now);
 
     return games
-      .filter((g) => !g.isPrivate || g.userId === currentUserId)
+      .filter((g) => !g.isPrivate || canSeePrivateContentFrom(g.userId))
       .filter((g) => {
         const t = new Date(g.date).getTime();
         switch (filter) {
@@ -83,7 +83,7 @@ export default function GamesTabPage() {
       .sort(
         (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
       );
-  }, [games, currentUserId, filter]);
+  }, [games, canSeePrivateContentFrom, filter]);
 
   return (
     <div className="px-4 py-2 pb-24">

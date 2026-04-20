@@ -58,8 +58,14 @@ interface SeedUser {
   bio: string;
   skillLevel: "Beginner" | "Intermediate" | "Advanced" | "Pro";
   friendIds: string[];
+  incomingFriendRequests?: string[];
+  outgoingFriendRequests?: string[];
 }
 
+// Friendships are mutual (both sides list each other). Pending requests
+// are likewise mirrored: if A has B in `outgoingFriendRequests`, B has A
+// in `incomingFriendRequests`. The seeder asserts this consistency below
+// so typos don't sneak in.
 const USERS: SeedUser[] = [
   {
     id: "u_sc",
@@ -68,6 +74,7 @@ const USERS: SeedUser[] = [
     bio: "Doubles specialist. Love a good dink battle.",
     skillLevel: "Advanced",
     friendIds: ["u_mj", "u_er"],
+    incomingFriendRequests: ["u_rp"],
   },
   {
     id: "u_mj",
@@ -76,6 +83,7 @@ const USERS: SeedUser[] = [
     bio: "Started playing 2 years ago. Obsessed ever since.",
     skillLevel: "Intermediate",
     friendIds: ["u_sc", "u_jw"],
+    incomingFriendRequests: ["u_dk"],
   },
   {
     id: "u_er",
@@ -92,6 +100,7 @@ const USERS: SeedUser[] = [
     bio: "Tournament director & 4.5 player. DM for partner requests.",
     skillLevel: "Pro",
     friendIds: [],
+    outgoingFriendRequests: ["u_mj"],
   },
   {
     id: "u_jw",
@@ -100,6 +109,7 @@ const USERS: SeedUser[] = [
     bio: "Just broke into 4.0! Working on my third shot drops.",
     skillLevel: "Advanced",
     friendIds: ["u_mj"],
+    incomingFriendRequests: ["u_at"],
   },
   {
     id: "u_at",
@@ -108,6 +118,7 @@ const USERS: SeedUser[] = [
     bio: "Paddle collector. Always happy to let you try one.",
     skillLevel: "Intermediate",
     friendIds: [],
+    outgoingFriendRequests: ["u_jw"],
   },
   {
     id: "u_rp",
@@ -116,6 +127,7 @@ const USERS: SeedUser[] = [
     bio: "Ex-tennis player transitioning to pickleball. Learning fast.",
     skillLevel: "Intermediate",
     friendIds: [],
+    outgoingFriendRequests: ["u_sc"],
   },
   {
     id: "u_tb",
@@ -126,6 +138,39 @@ const USERS: SeedUser[] = [
     friendIds: ["u_er"],
   },
 ];
+
+/** Verifies the seed data is internally consistent before we write it.
+ *  Every request in `outgoingFriendRequests[a] → b` must be mirrored by
+ *  `incomingFriendRequests[b] → a`, and friendships must be symmetric. */
+function validateFriendGraph() {
+  const byId = new Map(USERS.map((u) => [u.id, u]));
+  for (const u of USERS) {
+    for (const f of u.friendIds) {
+      const other = byId.get(f);
+      if (!other || !other.friendIds.includes(u.id)) {
+        throw new Error(
+          `Seed friend graph asymmetric: ${u.id}→${f} but not ${f}→${u.id}`
+        );
+      }
+    }
+    for (const t of u.outgoingFriendRequests ?? []) {
+      const other = byId.get(t);
+      if (!other || !(other.incomingFriendRequests ?? []).includes(u.id)) {
+        throw new Error(
+          `Seed request graph asymmetric: ${u.id} outgoing→${t} but ${t} has no incoming from ${u.id}`
+        );
+      }
+    }
+    for (const t of u.incomingFriendRequests ?? []) {
+      const other = byId.get(t);
+      if (!other || !(other.outgoingFriendRequests ?? []).includes(u.id)) {
+        throw new Error(
+          `Seed request graph asymmetric: ${u.id} incoming←${t} but ${t} has no outgoing to ${u.id}`
+        );
+      }
+    }
+  }
+}
 
 interface SeedComment {
   id: string;
@@ -505,6 +550,8 @@ async function seedUsers(db: FirebaseFirestore.Firestore): Promise<void> {
       skillLevel: u.skillLevel,
       initials: initialsFromName(u.name),
       friendIds: u.friendIds,
+      incomingFriendRequests: u.incomingFriendRequests ?? [],
+      outgoingFriendRequests: u.outgoingFriendRequests ?? [],
       createdAt: ts(-30 * DAY),
       updatedAt: ts(-30 * DAY),
     });
@@ -583,6 +630,8 @@ async function main() {
   console.log(
     `Seeding project ${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? "(unknown)"}…`
   );
+
+  validateFriendGraph();
 
   if (shouldReset) {
     console.log("--reset passed — clearing collections first");

@@ -22,14 +22,24 @@ service cloud.firestore {
     }
 
     // ---- users ----------------------------------------------------------
-    // Profiles are public reads (signed-in or guest). Only the owner can
-    // write their own doc.
+    // Profiles are public reads (signed-in or guest). Owners can write
+    // their own doc freely. Other signed-in users can perform narrowly-
+    // scoped friendship mutations (see helpers at bottom of file): send /
+    // cancel a request, accept / decline an incoming request, or unfriend.
+    // Each of those changes is restricted to ±1 of the caller's *own* uid
+    // in the right array field — they can never modify someone else's
+    // profile or social graph beyond their own membership.
     match /users/{userId} {
       allow read: if true;
       allow create: if isSelf(userId)
                     && request.resource.data.name is string
                     && request.resource.data.email is string;
-      allow update: if isSelf(userId);
+      allow update: if isSelf(userId)
+                    || isSendFriendRequest(request.auth.uid)
+                    || isCancelFriendRequest(request.auth.uid)
+                    || isDeclineFriendRequest(request.auth.uid)
+                    || isAcceptFriendRequest(request.auth.uid)
+                    || isUnfriend(request.auth.uid);
       // Owner can delete their own profile as part of the account-deletion
       // purge (client-side cleanup before Firebase Auth `deleteUser()`).
       allow delete: if isSelf(userId);
@@ -170,6 +180,65 @@ service cloud.firestore {
     function onlyChanges(fields) {
       return request.resource.data.diff(resource.data).affectedKeys()
              .hasOnly(fields);
+    }
+
+    // ---- friendship helpers --------------------------------------------
+    //
+    // All friendship mutations on someone else's user doc must be narrow:
+    // the only thing changing is whether the caller's own uid sits inside
+    // one (or, for accept, two) of these array fields:
+    //   - friendIds                (the mutual friend list)
+    //   - incomingFriendRequests   (requests addressed to this user)
+    //   - outgoingFriendRequests   (requests this user has sent out)
+    // An `updatedAt` bump is always permitted alongside the change.
+
+    function friendshipChanged(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(fields.concat(['updatedAt']));
+    }
+
+    // A → B: A writes to B's doc, stamping A's uid onto B's inbox.
+    function isSendFriendRequest(uid) {
+      return isSignedIn()
+             && friendshipChanged(['incomingFriendRequests'])
+             && !(uid in resource.data.get('incomingFriendRequests', []))
+             && uid in request.resource.data.get('incomingFriendRequests', []);
+    }
+
+    // A → B: A undoes the inbox entry they just placed on B.
+    function isCancelFriendRequest(uid) {
+      return isSignedIn()
+             && friendshipChanged(['incomingFriendRequests'])
+             && uid in resource.data.get('incomingFriendRequests', [])
+             && !(uid in request.resource.data.get('incomingFriendRequests', []));
+    }
+
+    // B → A: B declines. They remove themselves from A.outgoing.
+    function isDeclineFriendRequest(uid) {
+      return isSignedIn()
+             && friendshipChanged(['outgoingFriendRequests'])
+             && uid in resource.data.get('outgoingFriendRequests', [])
+             && !(uid in request.resource.data.get('outgoingFriendRequests', []));
+    }
+
+    // B → A: B accepts. Adds self to A.friendIds and simultaneously clears
+    // self from A.outgoingFriendRequests (so the request can't be "accepted
+    // twice"). Both field changes in one write; neither alone qualifies.
+    function isAcceptFriendRequest(uid) {
+      return isSignedIn()
+             && friendshipChanged(['friendIds', 'outgoingFriendRequests'])
+             && !(uid in resource.data.get('friendIds', []))
+             && uid in request.resource.data.get('friendIds', [])
+             && uid in resource.data.get('outgoingFriendRequests', [])
+             && !(uid in request.resource.data.get('outgoingFriendRequests', []));
+    }
+
+    // Either side: remove self from the other user's friendIds.
+    function isUnfriend(uid) {
+      return isSignedIn()
+             && friendshipChanged(['friendIds'])
+             && uid in resource.data.get('friendIds', [])
+             && !(uid in request.resource.data.get('friendIds', []));
     }
 
     // Valid "join" or "leave" on a game: only playerIds / playerCount move,

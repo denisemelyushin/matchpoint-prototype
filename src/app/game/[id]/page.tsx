@@ -25,12 +25,19 @@ export default function GameDetailPage({
     currentUserId,
     joinGame,
     leaveGame,
+    canSeePrivateContentFrom,
   } = useAppStore();
 
   const game = getGame(id);
   const host = game ? getUser(game.userId) : undefined;
+  // Deep-linking guard: a private game should only be visible to the host
+  // and their friends. Treat anything else as "not found" so the URL doesn't
+  // leak host/court/player info via the detail screen.
+  const canView =
+    !!game &&
+    (!game.isPrivate || canSeePrivateContentFrom(game.userId));
 
-  if (!game || !host) {
+  if (!game || !host || !canView) {
     return (
       <div className="flex flex-col h-full bg-background">
         <AppHeader title="Game" onBack={() => router.push("/games")} />

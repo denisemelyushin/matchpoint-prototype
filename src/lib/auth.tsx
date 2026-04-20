@@ -53,6 +53,8 @@ async function ensureUserDoc(
     skillLevel: "Intermediate",
     initials: initialsFromName(name),
     friendIds: [],
+    incomingFriendRequests: [],
+    outgoingFriendRequests: [],
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });

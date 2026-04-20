@@ -28,6 +28,7 @@ import {
   Timestamp,
   updateDoc,
   where,
+  writeBatch,
   type DocumentData,
   type Unsubscribe,
 } from "firebase/firestore";
@@ -152,7 +153,14 @@ function chatIdFor(a: string, b: string): string {
 /*  Store shape                                                                */
 /* -------------------------------------------------------------------------- */
 
-interface AppStore {
+/** Current friendship state between the signed-in user and another user. */
+export type FriendshipStatus =
+  | "none"
+  | "friends"
+  | "outgoing" // I've requested them; awaiting their accept.
+  | "incoming"; // They've requested me; I can accept or decline.
+
+export interface AppStore {
   // Readable state. `currentUser`/`currentUserId` are null while the user is
   // browsing in guest mode. Consumers must handle the null case.
   currentUserId: string | null;
@@ -162,6 +170,8 @@ interface AppStore {
   games: Game[];
   chats: Chat[];
   friendIds: string[];
+  incomingFriendRequests: string[];
+  outgoingFriendRequests: string[];
 
   // Lookups.
   getUser: (id: string) => User | undefined;
@@ -170,6 +180,15 @@ interface AppStore {
   getChat: (id: string) => Chat | undefined;
   getChatWithUser: (otherUserId: string) => Chat | undefined;
   isFriend: (userId: string) => boolean;
+  /** Friendship state between the current user and another user. */
+  getFriendshipStatus: (userId: string) => FriendshipStatus;
+  /**
+   * True when a private post/game authored by `authorId` should be visible
+   * to the current user (author themselves, or a confirmed friend of the
+   * author). Returns false for guests. For public content this check is
+   * unnecessary — the feed filters already short-circuit `!isPrivate`.
+   */
+  canSeePrivateContentFrom: (authorId: string) => boolean;
 
   // Mutations. All of these require authentication; if the user is a guest,
   // they trigger the auth modal and only run after sign-in. Rejected promises
@@ -177,7 +196,20 @@ interface AppStore {
   updateProfile: (
     partial: Partial<Omit<User, "id" | "initials">>
   ) => Promise<void>;
-  toggleFriend: (userId: string) => Promise<void>;
+  /**
+   * Send a friend request. If there's an incoming request from this user we
+   * accept it instead (the common "mutual add" shortcut). No-op if already
+   * friends or if a request is already outstanding.
+   */
+  sendFriendRequest: (userId: string) => Promise<void>;
+  /** Undo an outgoing request we previously sent. No-op if not outstanding. */
+  cancelFriendRequest: (userId: string) => Promise<void>;
+  /** Accept an incoming request. No-op if there's no such request. */
+  acceptFriendRequest: (userId: string) => Promise<void>;
+  /** Decline an incoming request (drops it, doesn't create a friendship). */
+  declineFriendRequest: (userId: string) => Promise<void>;
+  /** Break an existing mutual friendship from both sides. */
+  removeFriend: (userId: string) => Promise<void>;
   createPost: (input: {
     content: string;
     image?: string;
@@ -211,6 +243,12 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   const db = getFirebaseDb();
 
   const [users, setUsers] = useState<User[]>([]);
+  // Author → friendIds lookup. Used to answer "can the current viewer see
+  // this private post/game?" without needing a server-side denormalised
+  // `visibleTo` field. friendIds is already publicly readable per rules.
+  const [friendIdsByUser, setFriendIdsByUser] = useState<Map<string, string[]>>(
+    new Map()
+  );
   const [postBases, setPostBases] = useState<Map<string, PostBase>>(new Map());
   const [commentsByPost, setCommentsByPost] = useState<Map<string, Comment[]>>(
     new Map()
@@ -234,6 +272,13 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       collection(db, "users"),
       (snap) => {
         setUsers(snap.docs.map((d) => userFromDoc(d.id, d.data())));
+        const nextFriends = new Map<string, string[]>();
+        for (const d of snap.docs) {
+          const data = d.data();
+          const raw = data.friendIds;
+          nextFriends.set(d.id, Array.isArray(raw) ? (raw as string[]) : []);
+        }
+        setFriendIdsByUser(nextFriends);
       },
       (err) => {
         // Log but don't crash — the UI degrades gracefully to an empty list.
@@ -262,6 +307,16 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
 
   const friendIds: string[] = useMemo(() => {
     const raw = myUserDocData?.friendIds;
+    return Array.isArray(raw) ? (raw as string[]) : [];
+  }, [myUserDocData]);
+
+  const incomingFriendRequests: string[] = useMemo(() => {
+    const raw = myUserDocData?.incomingFriendRequests;
+    return Array.isArray(raw) ? (raw as string[]) : [];
+  }, [myUserDocData]);
+
+  const outgoingFriendRequests: string[] = useMemo(() => {
+    const raw = myUserDocData?.outgoingFriendRequests;
     return Array.isArray(raw) ? (raw as string[]) : [];
   }, [myUserDocData]);
 
@@ -521,6 +576,29 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     [friendIds]
   );
 
+  const getFriendshipStatus = useCallback<AppStore["getFriendshipStatus"]>(
+    (userId) => {
+      if (!currentUserId || userId === currentUserId) return "none";
+      if (friendIds.includes(userId)) return "friends";
+      if (outgoingFriendRequests.includes(userId)) return "outgoing";
+      if (incomingFriendRequests.includes(userId)) return "incoming";
+      return "none";
+    },
+    [currentUserId, friendIds, outgoingFriendRequests, incomingFriendRequests]
+  );
+
+  const canSeePrivateContentFrom = useCallback<
+    AppStore["canSeePrivateContentFrom"]
+  >(
+    (authorId) => {
+      if (!currentUserId) return false;
+      if (authorId === currentUserId) return true;
+      const authorFriends = friendIdsByUser.get(authorId);
+      return Array.isArray(authorFriends) && authorFriends.includes(currentUserId);
+    },
+    [currentUserId, friendIdsByUser]
+  );
+
   /* ---------- mutations ---------------------------------------------------- */
 
   const updateProfile = useCallback<AppStore["updateProfile"]>(
@@ -536,18 +614,134 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     [db, requireAuth]
   );
 
-  const toggleFriend = useCallback<AppStore["toggleFriend"]>(
+  /**
+   * Friendship mutations use a `WriteBatch` so the writer's doc and the
+   * other user's doc move in lock-step. Each action is also idempotent:
+   * if the caller's local state is already in the target state (e.g. a
+   * pending accept fired twice), the batch becomes a no-op arrayUnion /
+   * arrayRemove and we skip the round-trip entirely.
+   */
+  const sendFriendRequest = useCallback<AppStore["sendFriendRequest"]>(
     async (userId) => {
       const uid = await requireAuth();
       if (userId === uid) return;
-      const ref = doc(db, "users", uid);
-      const isCurrentlyFriend = friendIds.includes(userId);
-      await updateDoc(ref, {
-        friendIds: isCurrentlyFriend
-          ? arrayRemove(userId)
-          : arrayUnion(userId),
+      // If they've already asked us, treat this as "accept" — avoids the
+      // awkward case where both sides hit "Add friend" in sequence.
+      if (incomingFriendRequests.includes(userId)) {
+        await acceptFriendRequestInternal(uid, userId);
+        return;
+      }
+      if (
+        friendIds.includes(userId) ||
+        outgoingFriendRequests.includes(userId)
+      ) {
+        return;
+      }
+      const batch = writeBatch(db);
+      batch.update(doc(db, "users", uid), {
+        outgoingFriendRequests: arrayUnion(userId),
         updatedAt: serverTimestamp(),
       });
+      batch.update(doc(db, "users", userId), {
+        incomingFriendRequests: arrayUnion(uid),
+        updatedAt: serverTimestamp(),
+      });
+      await batch.commit();
+    },
+    // `acceptFriendRequestInternal` is stable across renders (declared
+    // below) so we deliberately leave it out of the deps list.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [db, requireAuth, friendIds, outgoingFriendRequests, incomingFriendRequests]
+  );
+
+  const cancelFriendRequest = useCallback<AppStore["cancelFriendRequest"]>(
+    async (userId) => {
+      const uid = await requireAuth();
+      if (!outgoingFriendRequests.includes(userId)) return;
+      const batch = writeBatch(db);
+      batch.update(doc(db, "users", uid), {
+        outgoingFriendRequests: arrayRemove(userId),
+        updatedAt: serverTimestamp(),
+      });
+      batch.update(doc(db, "users", userId), {
+        incomingFriendRequests: arrayRemove(uid),
+        updatedAt: serverTimestamp(),
+      });
+      await batch.commit();
+    },
+    [db, requireAuth, outgoingFriendRequests]
+  );
+
+  /**
+   * Shared core used by both `acceptFriendRequest` and the "send request
+   * when there's already an incoming one" shortcut in `sendFriendRequest`.
+   * Assumes caller already resolved `uid` via `requireAuth()`.
+   */
+  const acceptFriendRequestInternal = useCallback(
+    async (uid: string, otherUserId: string) => {
+      const batch = writeBatch(db);
+      // My side: add them to friendIds, drop their request from my inbox.
+      batch.update(doc(db, "users", uid), {
+        friendIds: arrayUnion(otherUserId),
+        incomingFriendRequests: arrayRemove(otherUserId),
+        updatedAt: serverTimestamp(),
+      });
+      // Their side: add me to their friendIds, clear me from their outbox.
+      // This pair of field changes is what the `isAcceptFriendRequest`
+      // rule allows for a cross-user update.
+      batch.update(doc(db, "users", otherUserId), {
+        friendIds: arrayUnion(uid),
+        outgoingFriendRequests: arrayRemove(uid),
+        updatedAt: serverTimestamp(),
+      });
+      await batch.commit();
+    },
+    [db]
+  );
+
+  const acceptFriendRequest = useCallback<AppStore["acceptFriendRequest"]>(
+    async (userId) => {
+      const uid = await requireAuth();
+      if (!incomingFriendRequests.includes(userId)) return;
+      await acceptFriendRequestInternal(uid, userId);
+    },
+    [requireAuth, incomingFriendRequests, acceptFriendRequestInternal]
+  );
+
+  const declineFriendRequest = useCallback<AppStore["declineFriendRequest"]>(
+    async (userId) => {
+      const uid = await requireAuth();
+      if (!incomingFriendRequests.includes(userId)) return;
+      const batch = writeBatch(db);
+      batch.update(doc(db, "users", uid), {
+        incomingFriendRequests: arrayRemove(userId),
+        updatedAt: serverTimestamp(),
+      });
+      // Their side: drop me from their outbox so the UI reflects the
+      // rejection on their next render.
+      batch.update(doc(db, "users", userId), {
+        outgoingFriendRequests: arrayRemove(uid),
+        updatedAt: serverTimestamp(),
+      });
+      await batch.commit();
+    },
+    [db, requireAuth, incomingFriendRequests]
+  );
+
+  const removeFriend = useCallback<AppStore["removeFriend"]>(
+    async (userId) => {
+      const uid = await requireAuth();
+      if (!friendIds.includes(userId)) return;
+      const batch = writeBatch(db);
+      batch.update(doc(db, "users", uid), {
+        friendIds: arrayRemove(userId),
+        updatedAt: serverTimestamp(),
+      });
+      batch.update(doc(db, "users", userId), {
+        friendIds: arrayRemove(uid),
+        updatedAt: serverTimestamp(),
+      });
+      await batch.commit();
     },
     [db, requireAuth, friendIds]
   );
@@ -768,14 +962,22 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     games,
     chats,
     friendIds,
+    incomingFriendRequests,
+    outgoingFriendRequests,
     getUser,
     getPost,
     getGame,
     getChat,
     getChatWithUser,
     isFriend,
+    getFriendshipStatus,
+    canSeePrivateContentFrom,
     updateProfile,
-    toggleFriend,
+    sendFriendRequest,
+    cancelFriendRequest,
+    acceptFriendRequest,
+    declineFriendRequest,
+    removeFriend,
     createPost,
     toggleLike,
     addComment,

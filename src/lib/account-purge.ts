@@ -9,6 +9,9 @@
 //
 // Scope:
 //   - /users/{uid}                              → deleted
+//   - /users/* (others) where uid is in          →  self-uid removed from each of:
+//     friendIds / incomingFriendRequests /         friendIds / incomingFriendRequests /
+//     outgoingFriendRequests                       outgoingFriendRequests
 //   - /posts/{postId} where userId == uid       → deleted with all comments + likes
 //   - /posts/*/comments where userId == uid     → deleted (and parent commentCount -1)
 //   - /posts/*/likes   where userId == uid      → deleted (and parent likeCount -1)
@@ -26,6 +29,7 @@
 // project moves to the Blaze plan, at which point this file can be deleted.
 
 import {
+  arrayRemove,
   collection,
   collectionGroup,
   deleteDoc,
@@ -33,6 +37,7 @@ import {
   getDocs,
   increment,
   query,
+  serverTimestamp,
   updateDoc,
   where,
   type DocumentReference,
@@ -148,6 +153,40 @@ async function purgeGames(db: Firestore, uid: string): Promise<void> {
   );
 }
 
+/**
+ * Remove references to this user from every other user's social graph —
+ * friendIds, incomingFriendRequests, outgoingFriendRequests. These are
+ * cross-user writes, but the `isUnfriend` / `isCancelFriendRequest` /
+ * `isDeclineFriendRequest` rules allow the caller to remove their own
+ * uid from any of those three arrays on any other user's doc, which is
+ * exactly what we need here.
+ */
+async function purgeFriendshipLinks(
+  db: Firestore,
+  uid: string
+): Promise<void> {
+  const fields = [
+    "friendIds",
+    "incomingFriendRequests",
+    "outgoingFriendRequests",
+  ] as const;
+  for (const field of fields) {
+    const snap = await getDocs(
+      query(collection(db, "users"), where(field, "array-contains", uid))
+    );
+    await Promise.all(
+      snap.docs
+        .filter((d) => d.id !== uid)
+        .map((d) =>
+          updateDoc(d.ref, {
+            [field]: arrayRemove(uid),
+            updatedAt: serverTimestamp(),
+          })
+        )
+    );
+  }
+}
+
 async function purgeChats(db: Firestore, uid: string): Promise<void> {
   const chats = await getDocs(
     query(
@@ -177,6 +216,7 @@ export async function purgeUserData(uid: string): Promise<void> {
   await purgeCommentsByUser(db, uid);
   await purgeGames(db, uid);
   await purgeChats(db, uid);
+  await purgeFriendshipLinks(db, uid);
   await purgeOwnPosts(db, uid);
 
   // Finally the profile doc itself.

@@ -20,16 +20,26 @@ export default function PostDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { getPost, getUser, toggleLike, addComment, currentUser } =
-    useAppStore();
+  const {
+    getPost,
+    getUser,
+    toggleLike,
+    addComment,
+    currentUser,
+    canSeePrivateContentFrom,
+  } = useAppStore();
   const { openAuthModal } = useAuth();
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
 
   const post = getPost(id);
   const author = post ? getUser(post.userId) : undefined;
+  // Deep-linking guard: a private post should only be visible to the author
+  // and their friends. Anyone else sees the generic "not found" screen.
+  const canView =
+    !!post && (!post.isPrivate || canSeePrivateContentFrom(post.userId));
 
-  if (!post || !author) {
+  if (!post || !author || !canView) {
     return (
       <div className="flex flex-col h-full bg-background">
         <AppHeader title="Post" />

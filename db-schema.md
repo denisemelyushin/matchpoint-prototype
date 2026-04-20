@@ -50,11 +50,13 @@ The user's public profile and app-level preferences. Created on first sign-in.
 | `skillLevel`   | `string` (enum) |    ✓     | One of `"Beginner" \| "Intermediate" \| "Advanced" \| "Pro"`.                              |
 | `initials`     | `string`        |    ✓     | 1–2 character fallback for the avatar. Derived from `name` on write.                       |
 | `avatarUrl`    | `string`        |          | Optional; absent while the user has no photo.                                              |
-| `friendIds`    | `string[]`      |    ✓     | Mutual friendships. Bounded to a small number for the prototype; migrate to a subcollection if it grows. |
+| `friendIds`    | `string[]`      |    ✓     | Confirmed mutual friendships. Always mirrored on the counterpart user (if `B` is in `A.friendIds` then `A` is in `B.friendIds`). Bounded to a small number for the prototype; migrate to a subcollection if it grows. |
+| `incomingFriendRequests` | `string[]` |   ✓    | User IDs who have sent a friend request **to** this user, awaiting accept/decline. Mirrored in the sender's `outgoingFriendRequests`. |
+| `outgoingFriendRequests` | `string[]` |   ✓    | User IDs whom **this user** has sent a friend request to, awaiting their accept. Mirrored in the recipient's `incomingFriendRequests`. |
 | `createdAt`    | `Timestamp`     |    ✓     | Set on user doc creation.                                                                  |
-| `updatedAt`    | `Timestamp`     |    ✓     | Bumped on every profile edit.                                                              |
+| `updatedAt`    | `Timestamp`     |    ✓     | Bumped on every profile edit or friendship mutation.                                       |
 
-**Indexes**: none beyond the defaults.
+**Indexes**: none beyond the defaults; `array-contains` queries on `friendIds` / `incomingFriendRequests` / `outgoingFriendRequests` use Firestore's automatic single-field array index.
 
 ---
 
@@ -152,7 +154,14 @@ The live rules live in `firestore.rules` and are deployed to the project via `np
 
 Current policy:
 
-- **`users/{userId}`** — public read (guest-friendly); only the owner can create / update / delete (delete is used by the account-purge flow that runs before Firebase Auth `deleteUser()`).
+- **`users/{userId}`** — public read (guest-friendly); the owner has full write access. In addition, any other signed-in user can make a narrowly-scoped **friendship mutation** on this doc — each variant is enforced by a dedicated rule helper and may only toggle the **caller's own uid** in one (or, for "accept", two) of `friendIds` / `incomingFriendRequests` / `outgoingFriendRequests`:
+  - `isSendFriendRequest` — add caller to `incomingFriendRequests`.
+  - `isCancelFriendRequest` — remove caller from `incomingFriendRequests` (was present).
+  - `isDeclineFriendRequest` — remove caller from `outgoingFriendRequests` (was present).
+  - `isAcceptFriendRequest` — atomically add caller to `friendIds` **and** remove caller from `outgoingFriendRequests`.
+  - `isUnfriend` — remove caller from `friendIds` (was present).
+
+  All other cross-user writes on the user doc are denied. Delete is restricted to the owner and is used by the account-purge flow that runs before Firebase Auth `deleteUser()`.
 - **`posts/{postId}`** — public read (the `isPrivate` flag is enforced as a client-side display filter only; Firestore list queries can't evaluate doc-field-dependent rules cleanly in a prototype). Create / delete only by author; updates by author or by any signed-in user changing only the denormalised `likeCount` / `commentCount`.
   - **`comments`**: public read; create by any signed-in user with `userId == request.auth.uid`; delete by the comment author OR the post author (the latter lets the account-purge tear down a post's subcollection before deleting the post itself). Also reachable via a collection-group rule (`match /{path=**}/comments/{commentId}`).
   - **`likes/{userId}`**: public read; create only by the liking user (`isSelf(userId)`); delete by the liking user OR the post author. Also reachable via a collection-group rule (`match /{path=**}/likes/{likeId}`).
